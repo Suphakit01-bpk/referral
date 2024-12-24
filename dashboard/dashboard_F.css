@@ -1,0 +1,517 @@
+body {
+    font-family: 'Sarabun', 'Prompt', 'Noto Sans Thai', sans-serif;
+    background-color: #f0f4ff;
+    margin: 0;
+    padding: 0;
+    font-size: 16px; /* เพิ่มขนาดฟอนต์หลัก */
+    line-height: 1.6; /* เพิ่มความสูงบรรทัดเพื่อความโปร่ง */
+}
+
+
+.navbar {
+    background-color: #0c2474;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    color: white;
+    height: 40px;
+}
+
+.navbar h1 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.container {
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h2 {
+    font-size: 18px;
+    color: #0056b3;
+    margin: 0;
+}
+
+.header p {
+    font-size: 14px;
+    color: #666;
+}
+
+.form-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.form-container h3 {
+    font-size: 22px;
+    color: #0056b3;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.form-group div {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.form-group div:last-child {
+    margin-right: 0;
+    /* Remove margin for the last item */
+}
+
+.form-group label {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+    /* Add box-sizing for padding */
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+    /* เพิ่มเงาสีฟ้า */
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.form-actions button {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    /* เพิ่ม box-shadow transition */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* เพิ่มเงา */
+}
+
+.form-actions button:hover {
+    background-color: #1f2a6d;
+    /* สีเข้มขึ้นเมื่อโฮเวอร์ */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+    /* เงาลึกขึ้นเมื่อโฮเวอร์ */
+}
+
+.form-actions button.cancel {
+    background-color: #ccc;
+    color: #333;
+}
+
+.table-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.table-container h3 {
+    font-size: 16px;
+    color: #0056b3;
+    margin-bottom: 20px;
+}
+
+.table-container button {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    /* เพิ่ม box-shadow transition */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* เพิ่มเงา */
+}
+
+.table-container button:hover {
+    background-color: #1f2a6d;
+    /* สีเข้มขึ้นเมื่อโฮเวอร์ */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+    /* เงาลึกขึ้นเมื่อโฮเวอร์ */
+}
+
+.table-container button.edit-button,
+.table-container button.delete-button {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-container button.edit-button:hover,
+.table-container button.delete-button:hover {
+    background-color: #1f2a6d;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* ปรับขนาดปุ่ม */
+.pagination button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.header-with-button {
+    display: flex;
+    justify-content: space-between;
+    /* จัดปุ่มไปทางขวา */
+    align-items: center;
+    /* จัดตำแหน่งให้อยู่กึ่งกลางแนวตั้ง */
+    margin-bottom: 20px;
+    /* เพิ่มระยะห่างด้านล่าง */
+}
+
+.header-with-button h3 {
+    margin: 0;
+    /* ลบ margin ของ h3 */
+}
+
+.header-with-button button {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.header-with-button button:hover {
+    background-color: #1f2a6d;
+}
+
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+}
+
+table th {
+    background-color: #0056b3;
+    color: white;
+}
+
+table td {
+    color: #333;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+    /* แถบสีอ่อน */
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+
+
+
+/* สไตล์สำหรับ Popup Form */
+.popup-form {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.popup-form.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+    max-height: 90vh; /* Limit the height to 90% of the viewport height */
+    overflow-y: auto; /* Enable vertical scrolling if content overflows */
+}
+
+.popup-form.show .popup-content {
+    transform: scale(1);
+}
+
+/* สไตล์สำหรับปุ่มปิด */
+.close-popup {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-popup:hover {
+    color: #333;
+}
+
+/* สไตล์สำหรับฟอร์ม */
+#transfer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#transfer-form input,
+#transfer-form select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#transfer-form button[type="submit"] {
+    /* background-color: #1f2a6d; */
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#transfer-form button[type="submit"]:hover {
+    background-color: #1f2a6d;
+}
+
+
+
+.toast {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    padding: 16px;
+    background-color: #1f2a6d;
+    color: white;
+    border-radius: 4px;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ...existing code... */
+
+.table-container button.edit-button {
+    background-color: #28a745; /* Green for edit */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-container button.delete-button {
+    background-color: #dc3545; /* Red for delete */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-container button.edit-button:hover {
+    background-color: #218838; /* Darker green for hover */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.table-container button.delete-button:hover {
+    background-color: #c82333; /* Darker red for hover */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.table-container button i {
+    margin-right: 5px;
+}
+
+
+
+.table-container button.cancel-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-container button.cancel-button:hover {
+    background-color: #c82333;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ...existing code... */
+
+.edit-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.edit-button:hover {
+    background-color: #218838;
+}
+
+
+
+.nav-button {
+    background-color: #ffffff;
+    color: #0056b3;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    margin-left: auto;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: #e6e6e6;
+}
+
+
+
+.view-icon {
+    font-size: 30px; /* ลดขนาดจาก 30px เป็น 20px */
+    color: #0AB4AB; 
+    transition: color 0.3s, transform 0.3s; /* เพิ่ม transition */
+}
+
+.view-icon:hover,
+.view-icon:focus {
+    color: #ED1B24; /* สีเมื่อ hover หรือ focus */
+    transform: scale(1.2); /* ขยายขนาดเมื่อ hover หรือ focus */
+}
+
+
+
+/* สไตล์สำหรับปุ่มสลับตาราง */
+.table-toggle {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.table-toggle button {
+    padding: 8px 16px;
+    border: 1px solid #0056b3;
+    background-color: white;
+    color: #0056b3;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.table-toggle button.active {
+    background-color: #0056b3;
+    color: white;
+}
+
+.table-toggle button:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.table-wrapper {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
