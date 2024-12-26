@@ -189,7 +189,7 @@ if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register
                                     </label>
                                 </div>
                             </div>
-                            <label for="approved-hospital">ส่งตัวไปที่โรงพยาบาล</label>
+                            <label for="approved-hospital">โรงพยาบาลที่อนุมัติ</label>
                             <select id="approved-hospital" required>
                                 <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
                                 <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>

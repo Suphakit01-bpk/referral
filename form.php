@@ -51,8 +51,12 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
 <html lang="th">
 
 <head>
+    <title>ใบส่งตัวผู้ป่วย</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="date=no">
+    <meta name="format-detection" content="address=no">
     <title>โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล - ใบส่งตัวผู้ป่วย</title>
     <link rel="stylesheet" href="form.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui/material-ui.css">
@@ -127,9 +131,8 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
         <div>
             <label>เรียน ผู้อำนวยการโรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</label>
         </div>
-        <br>
         <div class="form-group">
-            <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ข้าพเจ้า (บริษัท/โรงงาน) </label>
+            <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ข้าพเจ้า (บริษัท/โรงงาน) </label>
             <input type="text" value="<?php echo htmlspecialchars($formData['company'] ?? ''); ?>">
         </div>
 
@@ -215,7 +218,7 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
             </div>
 
         </div>
-
+        
         <div class="doctor-section">
             <h3>ความเห็นแพทย์</h3>
             <div class="form-group">

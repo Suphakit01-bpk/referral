@@ -33,15 +33,18 @@ if (!$db->connect()) {
 // ดึงข้อมูล user จาก session
 $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 
-// ดึงข้อมูล fullname จากตาราง users
+// ดึงข้อมูล fullname และ hospital จากตาราง users
 $fullname = '';
+$hospital = '';
 if ($username) {
     try {
-        $result = $db->query("SELECT fullname FROM users WHERE username = $1", array($username));
+        $result = $db->query("SELECT fullname, hospital FROM users WHERE username = $1", array($username));
         if ($result) {
             $row = pg_fetch_assoc($result);
             if ($row) {
                 $fullname = $row['fullname'];
+                $hospital = $row['hospital'];
+                $_SESSION['hospital'] = $hospital; // เก็บค่าโรงพยาบาลไว้ใน session
             }
         }
     } catch (Exception $e) {
@@ -106,7 +109,7 @@ if ($username) {
                     </select>
                 </div>
                 <div>
-                    <label for="status">���ถานะการส่งตัว:</label>
+                    <label for="status">สถานะการส่งตัว:</label>
                     <select id="status">
                         <option value="" disabled selected>กรุณาเลือกสถานะ</option>
                         <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
@@ -143,7 +146,7 @@ if ($username) {
                             <select id="hospital-popup" required>
                                 <option value="" disabled selected>กรุณาเลือกโรงพยาบาล</option>
                                 <option value="โรงพยาบาลบางปะกอก 9">โรงพยาบาลบางปะกอก 9</option>
-                                <option value="โ��งพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                                <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
                                 <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
                             </select>
 
@@ -188,9 +191,20 @@ if ($username) {
                         <th>ดูใบส่งตัว</th>
                     </tr>
                 </thead>
+                <tbody>
                 <?php 
                     try {
-                        $result = $db->query("SELECT * FROM transfer_form ORDER BY id ASC");
+                        // แก้ไขคำสั่ง SQL เพื่อป้องกันการซ้ำซ้อน
+                        $result = $db->query(
+                            "SELECT DISTINCT ON (tf.id) tf.*, u.fullname as user_fullname 
+                             FROM transfer_form tf 
+                             LEFT JOIN users u ON u.hospital = tf.approved_hospital 
+                             WHERE tf.approved_hospital = $1 
+                             
+                             ORDER BY tf.id, tf.transfer_date DESC",
+                            array($hospital)
+                        );
+                        
                         if ($result) {
                             while ($row = pg_fetch_assoc($result)) {
                                 echo "<tr>";
@@ -201,17 +215,28 @@ if ($username) {
                                 echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                                 echo "<td><a href='#'>ดาวน์โหลด</a></td>";
                                 echo "<td>
-                                        <button class='edit-button' data-id='".$row['id']."' data-national-id='".$row['national_id']."' data-full-name='".$row['full_name_tf']."' data-hospital-tf='".$row['hospital_tf']."' data-transfer-date='".$row['transfer_date']."' data-status='".$row['status']."'><i class='fas fa-edit'></i> แก้ไข</button>
-                                        <button class='delete-button'><i class='fas fa-trash-alt'></i> ยกเลิก</button>
+                                        <button class='edit-button' 
+                                            data-id='".$row['id']."' 
+                                            data-national-id='".$row['national_id']."' 
+                                            data-full-name='".$row['full_name_tf']."' 
+                                            data-hospital-tf='".$row['hospital_tf']."' 
+                                            data-transfer-date='".$row['transfer_date']."' 
+                                            data-status='".$row['status']."'>
+                                            <i class='fas fa-edit'></i> แก้ไข
+                                        </button>
+                                        <button class='delete-button'>
+                                            <i class='fas fa-trash-alt'></i> ยกเลิก
+                                        </button>
                                       </td>";
                                 echo "<td><a href='../form.php?id=" . htmlspecialchars($row['id']) . "'><i class='fas fa-eye view-icon'></i></a></td>";
                                 echo "</tr>";
                             }
                         }
                     } catch (Exception $e) {
-                        echo "Error: " . $e->getMessage();
+                        echo "<tr><td colspan='8'>Error: " . $e->getMessage() . "</td></tr>";
                     }
                 ?>
+                </tbody>
             </table>
             <div class="pagination">
                 <button id="prev-page">« Prev</button>

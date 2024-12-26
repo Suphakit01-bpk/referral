@@ -4,6 +4,11 @@ if ($_SESSION['role'] !== 'register') {
     header('Location: ../SignupForm/signin.php');
     exit();
 }
+
+// Get fullname from session
+$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน'; 
+$hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไป';
+
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -36,7 +41,8 @@ if ($_SESSION['role'] !== 'register') {
 <body>
     <div class="navbar">
         <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
-
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
+         <?php echo htmlspecialchars($hospital); ?>
         <a href="history.html" class="nav-button">ดูประวัติการยกเลิก</a>
     </div>
     <div class="container">
@@ -185,7 +191,7 @@ if ($_SESSION['role'] !== 'register') {
                                     </label>
                                 </div>
                             </div>
-                            <label for="approved-hospital">ส่งตัวไปที่โรงพยาบาล</label>
+                            <label for="approved-hospital">โรงพยาบาลที่อนุมัติ</label>
                             <select id="approved-hospital" required>
                                 <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
                                 <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
