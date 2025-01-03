@@ -750,7 +750,7 @@ if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register
         });
     </script>
 
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', function() {
             // ...existing code...
 
@@ -759,9 +759,12 @@ if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register
 
             // Add auto refresh functionality
             let refreshInterval;
+            let isSearching = false;  // Add flag to track search state
 
             function startAutoRefresh() {
-                refreshInterval = setInterval(fetchData, 5000);
+                if (!isSearching) {  // Only start refresh if not searching
+                    refreshInterval = setInterval(fetchData, 5000);
+                }
             }
 
             function stopAutoRefresh() {
@@ -770,10 +773,26 @@ if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register
                 }
             }
 
-            // Start auto refresh when page loads
+            // Modify search related event listeners
+            const searchButton = document.getElementById('search-button');
+            const cancelButton = document.getElementById('cancel-button');
+
+            searchButton.addEventListener('click', function() {
+                isSearching = true;  // Set searching flag
+                stopAutoRefresh();   // Stop refresh while searching
+                performSearch();
+            });
+
+            cancelButton.addEventListener('click', function() {
+                isSearching = false;  // Reset searching flag
+                resetSearch();
+                startAutoRefresh();   // Resume refresh after search is cancelled
+            });
+
+            // Start initial auto refresh
             startAutoRefresh();
 
-            // Stop refresh when user interacts with form
+            // Stop refresh when popup form is open
             if (popupForm) {
                 popupForm.addEventListener('click', stopAutoRefresh);
             }
@@ -781,10 +800,22 @@ if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register
             // Resume refresh when form is closed
             if (closeButton) {
                 closeButton.addEventListener('click', function() {
-                    hidePopupForm();
-                    startAutoRefresh();
+                    if (!isSearching) {  // Only resume if not in search mode
+                        hidePopupForm();
+                        startAutoRefresh();
+                    }
                 });
             }
+
+            // Update visibility change handler
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopAutoRefresh();
+                } else if (!isSearching) {  // Only resume if not searching
+                    fetchData();
+                    startAutoRefresh();
+                }
+            });
 
             // Modify form submit handler
             if (transferForm) {
