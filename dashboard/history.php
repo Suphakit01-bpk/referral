@@ -1,9 +1,12 @@
 <?php
 session_start();
-if ($_SESSION['role'] !== 'register') {
+if ($_SESSION['role'] === 'register' || $_SESSION['role'] === 'authorizer' || $_SESSION['role'] === 'nurse') {
+    // โค้ดที่ต้องการให้ทำงานเมื่อ role เป็น 'register', 'authorizer', หรือ 'nurse'
+} else {
     header('Location: ../SignupForm/signin.php');
     exit();
 }
+
 
 // Get fullname from session
 $fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน'; 
@@ -42,12 +45,28 @@ $userHospital = $_SESSION['hospital'] ?? '';
 </head>
 
 <body>
-    <div class="navbar">
-        <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
-         <?php echo htmlspecialchars($hospital); ?>
-        <a href="user_register.php" class="nav-button">กลับหน้าหลัก</a>
-    </div>
+<div class="navbar">
+    <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
+     <?php echo htmlspecialchars($hospital); ?>
+    <a href="<?php echo getRedirectUrl($_SESSION['role']); ?>" class="nav-button">กลับหน้าหลัก</a>
+</div>
+
+<?php
+function getRedirectUrl($role) {
+    switch ($role) {
+        case 'register':
+            return 'user_register.php'; // เปลี่ยนเส้นทางสำหรับ role 'register'
+        case 'authorizer':
+            return 'authorizer.php'; // เปลี่ยนเส้นทางสำหรับ role 'authorizer'
+        case 'nurse':
+            return 'user_nurse.php'; // เปลี่ยนเส้นทางสำหรับ role 'nurse'
+        default:
+            return '../SignupForm/signin.php'; // หากไม่มี role ที่กำหนด
+    }
+}
+?>
+
     <div class="container">
         <div class="form-container">
             <h3>ค้นหาข้อมูลผู้ป่วย</h3>

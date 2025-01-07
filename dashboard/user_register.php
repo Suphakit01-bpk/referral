@@ -475,7 +475,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             <td>${row.status || ''}</td>
                             
                             <td>
-                                <button class="edit-button" onclick="editTransfer('${row.national_id}')">
+                                <button class="edit-button" onclick="editTransfer('${row.national_id}', ${row.id})">
                                     แก้ไข
                                 </button>
                                 <button class="cancel-button" onclick="cancelTransfer('${row.national_id}')">
@@ -502,16 +502,19 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             fetchData();
 
             // เพิ่มฟังก์ชัน editTransfer ให้อยู่ในขอบเขตที่ถูกต้อง
-            window.editTransfer = function(nationalId) {
+            window.editTransfer = function(nationalId, id) {
                 // Reset form
                 transferForm.reset();
 
-                // Fetch record details
-                fetch(`../action_dashboard/get_transfer.php?national_id=${nationalId}`)
+                // Fetch record details with both national_id and id
+                fetch(`../action_dashboard/get_transfer.php?national_id=${nationalId}&id=${id}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             const record = data.data;
+
+                            // Store the record ID in the form for updating
+                            transferForm.setAttribute('data-record-id', record.id);
 
                             // Populate form fields
                             document.getElementById('national-id-popup').value = record.national_id;
@@ -598,6 +601,8 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                 });
 
                 const formData = {
+                    // Add the record ID if in edit mode
+                    id: this.getAttribute('data-record-id'),
                     nationalId: document.getElementById('national-id-popup').value.trim(),
                     fullName: document.getElementById('full-name-popup').value.trim(),
                     hospital_tf: document.getElementById('hospital_tf-popup').value,
