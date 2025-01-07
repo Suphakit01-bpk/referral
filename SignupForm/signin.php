@@ -1,6 +1,23 @@
 <?php
 session_start();
-session_destroy(); // ลบ session ทั้งหมด
+
+// ถ้ามี session อยู่แล้ว ให้ redirect ไปหน้าที่เหมาะสม
+if (isset($_SESSION['role'])) {
+    switch ($_SESSION['role']) {
+        case 'authorizer':
+            header('Location: ../dashboard/authorizer.php');
+            exit();
+        case 'nurse':
+            header('Location: ../dashboard/user_nurse.php');
+            exit();
+        case 'register':
+            header('Location: ../dashboard/user_register.php');
+            exit();
+    }
+}
+
+// ถ้าไม่มี session จึงจะลบ session (สำหรับ logout)
+session_destroy();
 ?>
 
 <!DOCTYPE html>
