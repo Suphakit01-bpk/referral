@@ -15,16 +15,41 @@ try {
     $userHospital = $_SESSION['hospital'];
 
     $sql = "SELECT 
+        id,
         national_id, 
         full_name_tf, 
         hospital_tf,
         transfer_date::date,
         COALESCE(status, 'รอการอนุมัติ') as status,
-        creator_hospital
+        creator_hospital,
+        billing_type,
+        insurance_company,
+        company,
+        address,
+        phone,
+        age,
+        purpose,
+        diagnosis,
+        reason,
+        approved_hospital,
+        approved_date::timestamp
     FROM transfer_form 
     WHERE creator_hospital = :creator_hospital 
     AND status != 'ยกเลิก'
-    ORDER BY transfer_date DESC";
+    AND (
+        status != 'อนุมัติ' 
+        OR (
+            status = 'อนุมัติ' 
+            AND approved_date::timestamp >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+        )
+    )
+    ORDER BY 
+        CASE 
+            WHEN status = 'รอการอนุมัติ' THEN 1
+            WHEN status = 'อนุมัติ' THEN 2
+            ELSE 3
+        END,
+        transfer_date DESC";
 
     $stmt = $conn->prepare($sql);
     $stmt->execute([':creator_hospital' => $userHospital]);

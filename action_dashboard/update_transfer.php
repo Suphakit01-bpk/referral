@@ -15,6 +15,16 @@ try {
         throw new Exception('Invalid JSON data');
     }
 
+    // ตรวจสอบข้อมูลที่จำเป็นให้ครบถ้วน
+    if (!isset($data['id']) || empty($data['id'])) {
+        throw new Exception('Missing ID parameter');
+    }
+    if (!isset($data['nationalId']) || empty($data['nationalId'])) {
+        throw new Exception('Missing National ID parameter');
+    }
+
+    error_log('Received data: ' . print_r($data, true)); // เพิ่ม log เพื่อดูข้อมูลที่ส่งมา
+
     $sql = "UPDATE transfer_form SET 
             full_name_tf = :full_name_tf,
             hospital_tf = :hospital_tf,
@@ -29,7 +39,7 @@ try {
             insurance_company = :insurance_company,
             purpose = :purpose,
             approved_hospital = :approved_hospital
-            WHERE national_id = :national_id";
+            WHERE id = :id AND national_id = :national_id";
 
     $stmt = $conn->prepare($sql);
 
@@ -38,6 +48,7 @@ try {
     $purpose = isset($data['purpose']) ? '{' . implode(',', $data['purpose']) . '}' : null;
 
     $params = [
+        ':id' => $data['id'],
         ':national_id' => $data['nationalId'],
         ':full_name_tf' => $data['fullName'],
         ':hospital_tf' => $data['hospital_tf'],
@@ -63,10 +74,11 @@ try {
     }
 
 } catch (Exception $e) {
-    error_log('Error: ' . $e->getMessage());
+    error_log('Update error: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => $e->getMessage(),
+        'debug' => isset($data) ? $data : 'No data received'
     ]);
 }
 

@@ -43,7 +43,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
          <?php echo htmlspecialchars($hospital); ?>
-        <a href="history.html" class="nav-button">ดูประวัติการยกเลิก</a>
+        <a href="history.php" class="nav-button">ดูประวัติการยกเลิก</a>
     </div>
     <div class="container">
         <div class="form-container">
@@ -319,7 +319,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                 fetchData(); // รีโหลดข้อมูลทั้งหมด
             }
 
-            // ฟังก์ชันสำหรับการค้นหา
+            // s
             function performSearch(event) {
                 // ป้องกันการ submit form
                 if (event) {
@@ -483,7 +483,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                 </button>
                             </td>
                             <td>
-                                <a href="../form.php?id=${row.national_id}">
+                                <a href="../form2.php?id=${row.id}" target="_blank">
                                     <i class="fas fa-eye view-icon"></i>
                                 </a>
                             </td>
@@ -729,128 +729,5 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             });
         });
     </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // ...existing code...
-
-            // Get the close button reference
-            const closeButton = document.getElementById('close-popup');
-
-            // Add auto refresh functionality
-            let refreshInterval;
-
-            function startAutoRefresh() {
-                refreshInterval = setInterval(fetchData, 5000);
-            }
-
-            function stopAutoRefresh() {
-                if (refreshInterval) {
-                    clearInterval(refreshInterval);
-                }
-            }
-
-            // Start auto refresh when page loads
-            startAutoRefresh();
-
-            // Stop refresh when user interacts with form
-            if (popupForm) {
-                popupForm.addEventListener('click', stopAutoRefresh);
-            }
-
-            // Resume refresh when form is closed
-            if (closeButton) {
-                closeButton.addEventListener('click', function() {
-                    hidePopupForm();
-                    startAutoRefresh();
-                });
-            }
-
-            // Modify form submit handler
-            if (transferForm) {
-                transferForm.addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    // ...existing form submission code...
-
-                    fetch(endpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(formData)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                fetchData(); // Immediate refresh after submit
-                                hidePopupForm();
-                                startAutoRefresh(); // Resume auto refresh
-
-                                const toast = document.getElementById('toast');
-                                toast.style.display = 'block';
-                                setTimeout(() => {
-                                    toast.style.display = 'none';
-                                }, 3000);
-                            } else {
-                                throw new Error(data.error || 'Failed to save data');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
-                        });
-                });
-            }
-
-            // Modify cancelTransfer function
-            window.cancelTransfer = function(nationalId) {
-                if (confirm('คุณต้องการยกเลิกการส่งตัวนี้ใช่หรือไม่?')) {
-                    stopAutoRefresh(); // Stop refresh during cancellation
-                    fetch('../action_dashboard/cancel_transfer.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                nationalId: nationalId
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                fetchData(); // Immediate refresh after cancellation
-                                startAutoRefresh(); // Resume auto refresh
-                                const toast = document.getElementById('toast');
-                                toast.querySelector('.toast-title').textContent = 'ยกเลิกสำเร็จ';
-                                toast.querySelector('.toast-description').textContent = 'ยกเลิกการส่งตัวเรียบร้อยแล้ว';
-                                toast.style.display = 'block';
-                                setTimeout(() => {
-                                    toast.style.display = 'none';
-                                }, 3000);
-                            } else {
-                                throw new Error(data.error || 'Failed to cancel transfer');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('เกิดข้อผิดพลาดในการยกเลิก: ' + error.message);
-                            startAutoRefresh(); // Resume auto refresh even if error occurs
-                        });
-                }
-            };
-
-            // Add visibility change handler
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    stopAutoRefresh();
-                } else {
-                    fetchData(); // Immediate refresh when page becomes visible
-                    startAutoRefresh();
-                }
-            });
-        });
-    </script>
-
 </body>
-
 </html>

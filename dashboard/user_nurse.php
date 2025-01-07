@@ -4,6 +4,9 @@ if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register
     header('Location: ../SignupForm/signin.html');
     exit();
 }
+// Get fullname from session
+$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน'; 
+$hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไป';
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -34,8 +37,10 @@ if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register
 </head>
 
 <body>
-    <div class="navbar">
-        <a href="user_nurse.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
+<div class="navbar">
+        <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
+         <?php echo htmlspecialchars($hospital); ?>
         <a href="history.php" class="nav-button">ดูประวัติการยกเลิก</a>
     </div>
     <div class="container">
