@@ -43,7 +43,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
          <?php echo htmlspecialchars($hospital); ?>
-        <a href="history.php" class="nav-button">ดูประวัติการยกเลิก</a>
+        <a href="history.php" class="nav-button">ดูประวัติ </a>
     </div>
     <div class="container">
         <div class="form-container">

@@ -41,7 +41,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         <a href="user_nurse.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
          <?php echo htmlspecialchars($hospital); ?>
-        <a href="history.php" class="nav-button">ดูประวัติการยกเลิก</a>
+        <a href="history.php" class="nav-button">ดูประวัติ</a>
     </div>
     <div class="container">
         <div class="form-container">
@@ -767,36 +767,16 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             // Get the close button reference
             const closeButton = document.getElementById('close-popup');
 
-            // Add auto refresh functionality
-            let refreshInterval;
-            let isSearching = false;  // Add flag to track search state
-
-            function startAutoRefresh() {
-                if (!isSearching) {  // Only start refresh if not searching
-                    refreshInterval = setInterval(fetchData, 5000);
-                }
-            }
-
-            function stopAutoRefresh() {
-                if (refreshInterval) {
-                    clearInterval(refreshInterval);
-                }
-            }
-
             // Modify search related event listeners
             const searchButton = document.getElementById('search-button');
             const cancelButton = document.getElementById('cancel-button');
 
             searchButton.addEventListener('click', function() {
-                isSearching = true;  // Set searching flag
-                stopAutoRefresh();   // Stop refresh while searching
                 performSearch();
             });
 
             cancelButton.addEventListener('click', function() {
-                isSearching = false;  // Reset searching flag
                 resetSearch();
-                startAutoRefresh();   // Resume refresh after search is cancelled
             });
 
             // Start initial auto refresh

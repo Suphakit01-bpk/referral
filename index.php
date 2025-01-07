@@ -2,12 +2,12 @@
 session_start();
 
 // Check if user is already logged in
-if(isset($_SESSION['user_id'])) {
+if(isset($_SESSION['role'])) {
     // Redirect to main page or dashboard
-    header("Location: form.php");
+    header("Location: SignupForm/signin.php");
 } else {
     // Redirect to login page
-    header("Location: login.html");
+    header("Location: SignupForm/signin.php");
 }
 exit();
 ?>

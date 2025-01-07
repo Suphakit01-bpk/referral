@@ -3,7 +3,7 @@ session_start();
 // ตรวจสอบว่ามีการ login หรือไม่
 if (!isset($_SESSION['username']) || empty($_SESSION['username'])) {
     // ถ้าไม่มี session จะ redirect ไปยังหน้า signin.html
-    header('Location: ../signin.html');
+    header('Location: ../SignupForm/signin.html');
     exit();
 }
 
