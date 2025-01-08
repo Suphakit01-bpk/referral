@@ -1,12 +1,14 @@
 <?php
 session_start();
-if ($_SESSION['role'] !== 'nurse') {  // เปลี่ยนจาก register เป็น nurse
-    header('Location: ../SignupForm/signin.html');
+if ($_SESSION['role'] !== 'register') {
+    header('Location: ../SignupForm/signin.php');
     exit();
 }
+
 // Get fullname from session
-$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน'; 
+$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน';
 $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไป';
+
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -14,7 +16,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nurse Transfer System</title> <!-- เปลี่ยนชื่อ title -->
+    <title>Transfer</title>
     <link rel="stylesheet" href="dashboard_F.css">
     <link rel="shortcut icon" type="image/x-icon" href="http://192.168.13.31/seedhelpdesk/favicon.ico">
     <link
@@ -33,15 +35,39 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             transform: translateY(0);
             opacity: 1;
         }
+
+        .refresh {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .refresh:hover {
+            background-color: #45a049;
+        }
+
+        .fa-sync-alt {
+            transition: transform 0.3s ease;
+        }
+
+        .refresh:hover .fa-sync-alt {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 
 <body>
-<div class="navbar">
-        <a href="user_nurse.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
+    <div class="navbar">
+        <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
-         <?php echo htmlspecialchars($hospital); ?>
-        <a href="history.php" class="nav-button">ดูประวัติ</a>
+        <?php echo htmlspecialchars($hospital); ?>
+        <a href="history.php" class="nav-button">ดูประวัติ </a>
     </div>
     <div class="container">
         <div class="form-container">
@@ -69,38 +95,40 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                     <label for="hospital_tf">ส่งตัวไปที่โรงพยาบาล:</label>
                     <select id="hospital_tf">
                         <option value="" disabled selected>กรุณาเลือกโรงพยาบาล</option>
-                        <option value="โรงพยาบาลบางปะกอก 9">โรงพยาบาลบางปะกอก 9</option>
-                        <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                        <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
                         <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
+                        <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                        <option value="โรงพยาบาลบางปะกอก 8">โรงพยาบาลบางปะกอก 8</option>
+                        <option value="โรงพยาบาลบางปะกอก 2 รังสิต">โรงพยาบาลบางปะกอก 2 รังสิต</option>
+                        <option value="โรงพยาบาลบางปะกอกสมุทรปราการ">โรงพยาบาลบางปะกอกสมุทรปราการ</option>
+                        <option value="โรงพยาบาลปิยะเวท">โรงพยาบาลปิยะเวท</option>
+                        <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
                     </select>
                 </div>
                 <div>
                     <label for="status">สถานะการส่งตัว:</label>
                     <select id="status">
                         <option value="" disabled selected>กรุณาเลือกสถานะ</option>
-                        <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
+                        <option value="อนุมัติ">อนุมัติ</option>
                         <option value="รอการอนุมัติ">รอการอนุมัติ</option>
                     </select>
                 </div>
             </div>
             <div class="form-actions">
                 <button id="search-button" type="button">Search</button>
-                <button id="cancel-button" class="cancel" type="button">ยกเลิก</button>
+                <button id="refresh-button" class="refresh" type="button">
+                    <i class="fas fa-sync-alt"></i> รีเฟรช
+                </button>
             </div>
         </div>
 
         <!-- ตารางแสดงข้อมูลผู้ป่วย -->
         <div class="table-container">
             <div class="header-with-button">
-                <div class="header-left">
-                    <h3>ข้อมูลผู้ป่วย</h3>
-                    <div class="table-toggle">
-                        <button id="outgoing-button" class="active">ผู้ป่วยที่ส่งออก</button>
-                        <button id="incoming-button">ผู้ป่วยที่ส่งมา</button>
-                    </div>
-                </div>
+                <h3>ข้อมูลผู้ป่วย</h3>
                 <button id="add-form-button" type="button">เพิ่มฟอร์มส่งตัว</button>
 
+                <!-- ฟอร์มป๊อปอัพ -->
                 <div id="popup-form" class="popup-form hidden">
                     <div class="popup-content">
                         <span id="close-popup" class="close-popup">&times;</span>
@@ -213,50 +241,27 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             <input id="reason-popup" placeholder="กรุณาป้อนเหตุผลในการส่งตัว" type="text">
 
                             <button type="submit">บันทึก</button>
-                        </form>>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            <!-- ตารางผู้ป่วยที่ส่งออก -->
-            <div id="outgoing-table" class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>เลขประจำตัวประชาชน</th>
-                            <th>ชื่อ - นามสกุล</th>
-                            <th>โรงพยาบาลต้นทาง</th> <!-- เปลี่ยนหัวข้อคอลัมน์ -->
-                            <th>วันที่ส่งตัว</th>
-                            <th>สถานะ</th>
-                            <th>ตัวจัดการ</th>
-                            <th>ดูใบส่งตัว</th>
-                            <th>ดาวน์โหลด</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- ตารางผู้ป่วยที่ส่งมา -->
-            <div id="incoming-table" class="table-wrapper" style="display: none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>เลขประจำตัวประชาชน</th>
-                            <th>ชื่อ - นามสกุล</th>
-                            <th>โรงพยาบาลต้นทาง</th> <!-- เปลี่ยนหัวข้อคอลัมน์ -->
-                            <th>วันที่ส่งตัว</th>
-                            <th>สถานะ</th>
-                            <th>ตัวจัดการ</th>
-                            <th>ดูใบส่งตัว</th>
-                            <th>ดาวน์โหลด</th>
-                        </tr>
-                    </thead>
-                    <tbody id="incoming-table-body">
-                    </tbody>
-                </table>
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>เลขประจำตัวประชาชน</th>
+                        <th>ชื่อ - นามสกุล</th>
+                        <th>ส่งตัวไปที่โรงพยาบาล</th>
+                        <th>วันที่ส่งตัว</th>
+                        <th>สถานะ</th>
+                        <th>ตัวจัดการ !! </th> <!-- เพิ่มคอลัมน์ใหม่ -->
+                        <th>ดูใบส่งตัว</th>
+                        <th>ดาวน์โหลด</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
             <div class="pagination">
                 <button id="prev-page">« Prev</button>
                 <span id="page-info"></span>
@@ -323,82 +328,73 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
     <script>
         //script ปุ่ม search
         document.addEventListener('DOMContentLoaded', function() {
-            const cancelButton = document.getElementById('cancel-button');
             const searchButton = document.getElementById('search-button');
+            const refreshButton = document.getElementById('refresh-button');
             const searchForm = document.querySelector('.form-container');
-            const nationalIdInput = document.getElementById('national-id');
-            const fullNameInput = document.getElementById('full-name');
-            const hospital_tfSelect = document.getElementById('hospital_tf');
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
-            const tableBody = document.getElementById('table-body');
-            const status = document.getElementById('status');
+            const inputs = {
+                nationalId: document.getElementById('national-id'),
+                fullName: document.getElementById('full-name'),
+                hospital_tf: document.getElementById('hospital_tf'),
+                startDate: document.getElementById('start-date'),
+                endDate: document.getElementById('end-date'),
+                status: document.getElementById('status')
+            };
 
-            // ฟังก์ชันสำหรับรีเซ็ตการค้นหา
-            function resetSearch() {
-                nationalIdInput.value = '';
-                fullNameInput.value = '';
-                hospital_tfSelect.selectedIndex = 0;
-                startDateInput.value = '';
-                endDateInput.value = '';
-                status.selectedIndex = 0;
-                fetchData(); // รีโหลดข้อมูลทั้งหมด
+            // ฟังก์ชันรีเฟรชข้อมูล
+            function refreshData() {
+                // เพิ่มเอฟเฟกต์การหมุนไอคอน
+                const icon = refreshButton.querySelector('.fa-sync-alt');
+                icon.style.transform = 'rotate(360deg)';
+
+                // รีเซ็ตฟอร์ม
+                Object.values(inputs).forEach(input => {
+                    if (input.type === 'select-one') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                });
+
+                // รีเซ็ตตัวแปรค้นหา
+                window.currentSearchCriteria = null;
+
+                // โหลดข้อมูลใหม่
+                fetchData(1);
+
+                // รีเซ็ตการหมุนไอคอนหลังจาก animation เสร็จสิ้น
+                setTimeout(() => {
+                    icon.style.transform = '';
+                }, 300);
             }
 
-            // ฟังก์ชันสำหรับการค้นหา
+            // ฟังก์ชันค้นหา
             function performSearch(event) {
-                // ป้องกันการ submit form
                 if (event) {
                     event.preventDefault();
                 }
 
                 const searchCriteria = {
-                    nationalId: nationalIdInput.value.trim(),
-                    fullName: fullNameInput.value.trim().toLowerCase(),
-                    hospital_tf: hospital_tfSelect.value,
-                    status: status.value,
-                    startDate: startDateInput.value ? new Date(startDateInput.value) : null,
-                    endDate: endDateInput.value ? new Date(endDateInput.value) : null
+                    nationalId: inputs.nationalId.value.trim(),
+                    fullName: inputs.fullName.value.trim(),
+                    hospital_tf: inputs.hospital_tf.value,
+                    status: inputs.status.value,
+                    startDate: inputs.startDate.value,
+                    endDate: inputs.endDate.value
                 };
 
-                if (searchCriteria.startDate) {
-                    searchCriteria.startDate.setHours(0, 0, 0, 0);
-                }
-                if (searchCriteria.endDate) {
-                    searchCriteria.endDate.setHours(23, 59, 59, 999);
-                }
+                // เก็บค่าการค้นหาไว้
+                window.currentSearchCriteria = searchCriteria;
 
-                const rows = tableBody.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length === 0) return;
-
-                    try {
-                        const rowData = {
-                            nationalId: cells[0].textContent.trim(),
-                            fullName: cells[1].textContent.trim().toLowerCase(),
-                            hospital_tf: cells[2].textContent.trim(),
-                            date: parseDate(cells[3].textContent.trim()),
-                            status: cells[4].textContent.trim()
-                        };
-
-                        const matches = isMatch(rowData, searchCriteria);
-                        row.style.display = matches ? 'table-row' : 'none';
-                    } catch (error) {
-                        console.error('Error processing row:', error);
-                    }
-                });
+                // ส่งคำค้นหาไปยัง API
+                fetchData(1);
             }
 
             // Event Listeners
-            cancelButton.addEventListener('click', resetSearch);
+            refreshButton.addEventListener('click', refreshData);
             searchButton.addEventListener('click', performSearch);
 
-            // เพิ่ม Form Submit Event
-            searchForm.addEventListener('submit', performSearch);
-
-            // เพิ่ม Enter key event สำหรับช่อง input
-            [nationalIdInput, fullNameInput].forEach(input => {
+            // เพิ่ม Event Listener สำหรับ Enter key ในช่องค้นหา
+            Object.values(inputs).forEach(input => {
                 input.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -407,39 +403,8 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                 });
             });
 
-            // Helper functions
-            function parseDate(dateStr) {
-                try {
-                    const [month, day, year] = dateStr.split('/').map(num => parseInt(num, 10));
-                    const date = new Date(year, month - 1, day);
-                    if (isNaN(date.getTime())) {
-                        throw new Error('Invalid date');
-                    }
-                    return date;
-                } catch (error) {
-                    console.error('Error parsing date:', dateStr, error);
-                    return new Date(0); // Return epoch date as fallback
-                }
-            }
-
-            function isMatch(rowData, criteria) {
-                if (!rowData || !criteria) return true;
-
-                if (criteria.nationalId && !rowData.nationalId.includes(criteria.nationalId)) return false;
-                if (criteria.fullName && !rowData.fullName.includes(criteria.fullName)) return false;
-                if (criteria.hospital_tf && rowData.hospital_tf !== criteria.hospital_tf) return false;
-                if (criteria.status && rowData.status !== criteria.status) return false;
-
-                if (criteria.startDate && criteria.endDate) {
-                    return rowData.date >= criteria.startDate && rowData.date <= criteria.endDate;
-                } else if (criteria.startDate) {
-                    return rowData.date >= criteria.startDate;
-                } else if (criteria.endDate) {
-                    return rowData.date <= criteria.endDate;
-                }
-
-                return true;
-            }
+            // Initial load
+            fetchData(1);
         });
     </script>
 
@@ -469,7 +434,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             });
         });
     </script>
- <script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const addButton = document.getElementById('add-form-button');
             const popupForm = document.getElementById('popup-form');
@@ -481,8 +446,20 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             window.popupForm = popupForm;
 
             // Define fetchData function in the global scope
-            window.fetchData = function() {
-                fetch('../action_dashboard/fetch_transfers.php')
+            window.fetchData = function(page = 1) {
+                const queryParams = new URLSearchParams();
+                queryParams.set('page', page.toString());
+
+                // Add current search criteria if exists
+                if (window.currentSearchCriteria) {
+                    Object.entries(window.currentSearchCriteria).forEach(([key, value]) => {
+                        if (value) {
+                            queryParams.set(key, value);
+                        }
+                    });
+                }
+
+                fetch(`../action_dashboard/fetch_transfers1.php?${queryParams.toString()}`)
                     .then(response => response.json())
                     .then(result => {
                         if (!result.success) {
@@ -516,6 +493,18 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                         `;
                             tableBody.appendChild(newRow);
                         });
+
+                        // Update pagination info
+                        const pageInfo = document.getElementById('page-info');
+                        const prevButton = document.getElementById('prev-page');
+                        const nextButton = document.getElementById('next-page');
+
+                        pageInfo.textContent = `หน้า ${result.pagination.currentPage} จาก ${result.pagination.totalPages}`;
+                        prevButton.disabled = result.pagination.currentPage <= 1;
+                        nextButton.disabled = result.pagination.currentPage >= result.pagination.totalPages;
+
+                        // Store current page
+                        window.currentPage = result.pagination.currentPage;
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -722,6 +711,20 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                         });
                 }
             };
+
+            // Add pagination event listeners
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (window.currentPage > 1) {
+                    fetchData(window.currentPage - 1);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                fetchData(window.currentPage + 1);
+            });
+
+            // Initial load
+            fetchData(1);
         });
     </script>
 
@@ -759,405 +762,127 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             });
         });
     </script>
-
-<script>
+    <!-- แทนที่ script การจัดการ pagination เดิม -->
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ...existing code...
 
-            // Get the close button reference
-            const closeButton = document.getElementById('close-popup');
+            function updatePaginationButtons(result) {
+                const pageInfo = document.getElementById('page-info');
+                const prevButton = document.getElementById('prev-page');
+                const nextButton = document.getElementById('next-page');
 
-            // Modify search related event listeners
-            const searchButton = document.getElementById('search-button');
-            const cancelButton = document.getElementById('cancel-button');
-
-            searchButton.addEventListener('click', function() {
-                performSearch();
-            });
-
-            cancelButton.addEventListener('click', function() {
-                resetSearch();
-            });
-
-            // Start initial auto refresh
-            startAutoRefresh();
-
-            // Stop refresh when popup form is open
-            if (popupForm) {
-                popupForm.addEventListener('click', stopAutoRefresh);
-            }
-
-            // Resume refresh when form is closed
-            if (closeButton) {
-                closeButton.addEventListener('click', function() {
-                    if (!isSearching) {  // Only resume if not in search mode
-                        hidePopupForm();
-                        startAutoRefresh();
-                    }
-                });
-            }
-
-            // Update visibility change handler
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    stopAutoRefresh();
-                } else if (!isSearching) {  // Only resume if not searching
-                    fetchData();
-                    startAutoRefresh();
+                if (!result.pagination) {
+                    pageInfo.textContent = 'หน้า 1 จาก 1 (0 รายการ)';
+                    prevButton.style.display = 'none';
+                    nextButton.style.display = 'none';
+                    return;
                 }
-            });
 
-            // Modify form submit handler
-            if (transferForm) {
-                transferForm.addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    // ...existing form submission code...
+                const { currentPage, totalPages, totalRows, displayedRows, rowsPerPage } = result.pagination;
 
-                    fetch(endpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(formData)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                fetchData(); // Immediate refresh after submit
-                                hidePopupForm();
-                                startAutoRefresh(); // Resume auto refresh
+                // คำนวณจำนวนหน้าที่ควรมี
+                const shouldShowPagination = totalRows > rowsPerPage;
+                
+                // อัพเดทข้อความแสดงหน้า
+                pageInfo.textContent = shouldShowPagination 
+                    ? `หน้า ${currentPage} จาก ${totalPages} (${totalRows} รายการ)`
+                    : `แสดง ${totalRows} รายการ`;
 
-                                const toast = document.getElementById('toast');
-                                toast.style.display = 'block';
-                                setTimeout(() => {
-                                    toast.style.display = 'none';
-                                }, 3000);
-                            } else {
-                                throw new Error(data.error || 'Failed to save data');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
-                        });
-                });
-            }
+                // แสดง/ซ่อนปุ่มเปลี่ยนหน้า
+                prevButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
+                nextButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
 
-            // Modify cancelTransfer function
-            window.cancelTransfer = function(nationalId) {
-                if (confirm('คุณต้องการยกเลิกการส่งตัวนี้ใช่หรือไม่?')) {
-                    stopAutoRefresh(); // Stop refresh during cancellation
-                    fetch('../action_dashboard/cancel_transfer.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                nationalId: nationalId
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                fetchData(); // Immediate refresh after cancellation
-                                startAutoRefresh(); // Resume auto refresh
-                                const toast = document.getElementById('toast');
-                                toast.querySelector('.toast-title').textContent = 'ยกเลิกสำเร็จ';
-                                toast.querySelector('.toast-description').textContent = 'ยกเลิกการส่งตัวเรียบร้อยแล้ว';
-                                toast.style.display = 'block';
-                                setTimeout(() => {
-                                    toast.style.display = 'none';
-                                }, 3000);
-                            } else {
-                                throw new Error(data.error || 'Failed to cancel transfer');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('เกิดข้อผิดพลาดในการยกเลิก: ' + error.message);
-                            startAutoRefresh(); // Resume auto refresh even if error occurs
-                        });
-                }
-            };
-
-            // Add visibility change handler
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    stopAutoRefresh();
-                } else {
-                    fetchData(); // Immediate refresh when page becomes visible
-                    startAutoRefresh();
-                }
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const outgoingButton = document.getElementById('outgoing-button');
-            const incomingButton = document.getElementById('incoming-button');
-            const outgoingTable = document.getElementById('outgoing-table');
-            const incomingTable = document.getElementById('incoming-table');
-            const addFormButton = document.getElementById('add-form-button');
-
-            // ฟังก์ชันสลับตาราง
-            function switchTable(showIncoming) {
-                if (showIncoming) {
-                    outgoingTable.style.display = 'none';
-                    incomingTable.style.display = 'block';
-                    incomingButton.classList.add('active');
-                    outgoingButton.classList.remove('active');
-                    addFormButton.style.display = 'none';
-                    fetchIncomingData();
-                } else {
-                    outgoingTable.style.display = 'block';
-                    incomingTable.style.display = 'none';
-                    outgoingButton.classList.add('active');
-                    incomingButton.classList.remove('active');
-                    addFormButton.style.display = 'block';
-                    fetchData(); // ฟังก์ชันเดิมสำหรับดึงข้อมูลผู้ป่วยที่ส่งออก
+                // อัพเดทสถานะปุ่ม
+                if (shouldShowPagination) {
+                    prevButton.disabled = currentPage <= 1;
+                    nextButton.disabled = currentPage >= totalPages;
                 }
             }
 
-            // ฟังก์ชันดึงข้อมูลผู้ป่วยที่ส่งมา
-            function fetchIncomingData() {
-                fetch('../action_dashboard/fetch_incoming_transfers.php')
+            // ปรับปรุงฟังก์ชัน fetchData
+            window.fetchData = function(page = 1) {
+                const queryParams = new URLSearchParams(window.location.search);
+                queryParams.set('page', page.toString());
+
+                // Add current search criteria if exists
+                if (window.currentSearchCriteria) {
+                    Object.entries(window.currentSearchCriteria).forEach(([key, value]) => {
+                        if (value) {
+                            queryParams.set(key, value);
+                        }
+                    });
+                }
+
+                fetch(`../action_dashboard/fetch_transfers1.php?${queryParams.toString()}`)
                     .then(response => response.json())
                     .then(result => {
                         if (!result.success) {
                             throw new Error(result.error || 'Failed to fetch data');
                         }
 
-                        const tableBody = document.getElementById('incoming-table-body');
+                        const tableBody = document.getElementById('table-body');
                         tableBody.innerHTML = '';
 
                         if (result.data.length === 0) {
-                            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">ไม่พบข้อมูลการส่งตัวผู้ป่วย</td></tr>';
-                            return;
-                        }
-
-                        result.data.forEach(row => {
-                            const newRow = document.createElement('tr');
-                            newRow.innerHTML = `
+                            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">ไม่พบข้อมูล</td></tr>';
+                        } else {
+                            result.data.forEach(row => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
                                 <td>${row.national_id || ''}</td>
                                 <td>${row.full_name_tf || ''}</td>
-                                <td>${row.creator_hospital || ''}</td>
+                                <td>${row.hospital_tf || ''}</td>
                                 <td>${row.transfer_date || ''}</td>
                                 <td>${row.status || ''}</td>
                                 <td>
-                                    ${row.status === 'รอการอนุมัติ' ? `
-                                        <button class="edit-button" onclick="approveTransfer('${row.national_id}')">
-                                            อนุมัติ
-                                        </button>
-                                        <button class="cancel-button" onclick="rejectTransfer('${row.national_id}')">
-                                            ปฏิเสธ
-                                        </button>
-                                    ` : ''}
+                                    <button class="edit-button" onclick="editTransfer('${row.national_id}', ${row.id})">แก้ไข</button>
+                                    <button class="cancel-button" onclick="cancelTransfer('${row.national_id}')">ยกเลิก</button>
                                 </td>
                                 <td>
-                                    <a href="../form.php?id=${row.national_id}" target="_blank">
+                                    <a href="../form2.php?id=${row.id}" target="_blank">
                                         <i class="fas fa-eye view-icon"></i>
                                     </a>
                                 </td>
-                                <td>
-                                    <a href="../download.php?id=${row.national_id}">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                </td>
+                                <td><a href="#">ดาวน์โหลด</a></td>
                             `;
-                            tableBody.appendChild(newRow);
-                        });
+                                tableBody.appendChild(tr);
+                            });
+                        }
+
+                        // อัพเดทปุ่ม pagination
+                        updatePaginationButtons(result);
+
+                        // เก็บหน้าปัจจุบัน
+                        window.currentPage = result.pagination.currentPage;
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        document.getElementById('incoming-table-body').innerHTML = 
+                        document.getElementById('table-body').innerHTML =
                             '<tr><td colspan="8" style="text-align: center; color: red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
                     });
-            }
+            };
 
-            // เพิ่มฟังก์ชันสำหรับการอนุมัติและปฏิเสธ
-            function approveTransfer(nationalId) {
-                if (confirm('คุณต้องการอนุมัติการส่งตัวผู้ป่วยนี้ใช่หรือไม่?')) {
-                    updateTransferStatus(nationalId, 'อนุมัติแล้ว');
+            // Event Listeners for pagination
+            document.getElementById('prev-page').addEventListener('click', function() {
+                if (window.currentPage > 1) {
+                    fetchData(window.currentPage - 1);
                 }
-            }
+            });
 
-            function rejectTransfer(nationalId) {
-                if (confirm('คุณต้องการปฏิเสธการส่งตัวผู้ป่วยนี้ใช่หรือไม่?')) {
-                    updateTransferStatus(nationalId, 'ปฏิเสธ');
+            document.getElementById('next-page').addEventListener('click', function() {
+                const { totalRows, rowsPerPage, currentPage } = window.paginationInfo;
+                const totalPages = Math.ceil(totalRows / rowsPerPage);
+                
+                if (currentPage < totalPages && totalRows > rowsPerPage) {
+                    fetchData(window.currentPage + 1);
                 }
-            }
+            });
 
-            function updateTransferStatus(nationalId, status) {
-                fetch('../action_dashboard/update_status.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        nationalId: nationalId,
-                        status: status
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        fetchIncomingData(); // รีเฟรชตาราง
-                        const toast = document.getElementById('toast');
-                        toast.querySelector('.toast-title').textContent = 'ดำเนินการสำเร็จ';
-                        toast.querySelector('.toast-description').textContent = 
-                            `การส่งตัวผู้ป่วยถูก${status}เรียบร้อยแล้ว`;
-                        toast.style.display = 'block';
-                        setTimeout(() => {
-                            toast.style.display = 'none';
-                        }, 3000);
-                    } else {
-                        throw new Error(data.error || 'Failed to update status');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ: ' + error.message);
-                });
-            }
-
-            // Event listeners
-            outgoingButton.addEventListener('click', () => switchTable(false));
-            incomingButton.addEventListener('click', () => switchTable(true));
+            // Initial load
+            fetchData(1);
         });
     </script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const cancelButton = document.getElementById('cancel-button');
-    const searchButton = document.getElementById('search-button');
-    const searchForm = document.querySelector('.form-container');
-    const nationalIdInput = document.getElementById('national-id');
-    const fullNameInput = document.getElementById('full-name');
-    const hospital_tfSelect = document.getElementById('hospital_tf');
-    const startDateInput = document.getElementById('start-date');
-    const endDateInput = document.getElementById('end-date');
-    const statusSelect = document.getElementById('status');
-    const outgoingTableBody = document.getElementById('table-body');
-    const incomingTableBody = document.getElementById('incoming-table-body');
-
-    // ฟังก์ชันสำหรับรีเซ็ตการค้นหา
-    function resetSearch() {
-        nationalIdInput.value = '';
-        fullNameInput.value = '';
-        hospital_tfSelect.selectedIndex = 0;
-        startDateInput.value = '';
-        endDateInput.value = '';
-        statusSelect.selectedIndex = 0;
-        
-        // รีเฟรชข้อมูลตามตารางที่กำลังแสดงอยู่
-        const isIncomingVisible = document.getElementById('incoming-table').style.display === 'block';
-        if (isIncomingVisible) {
-            fetchIncomingData();
-        } else {
-            fetchData();
-        }
-    }
-
-    // ฟังก์ชันสำหรับการค้นหา
-    function performSearch(event) {
-        if (event) {
-            event.preventDefault();
-        }
-
-        const searchCriteria = {
-            nationalId: nationalIdInput.value.trim(),
-            fullName: fullNameInput.value.trim().toLowerCase(),
-            hospital_tf: hospital_tfSelect.value,
-            status: statusSelect.value,
-            startDate: startDateInput.value ? new Date(startDateInput.value) : null,
-            endDate: endDateInput.value ? new Date(endDateInput.value) : null
-        };
-
-        if (searchCriteria.startDate) {
-            searchCriteria.startDate.setHours(0, 0, 0, 0);
-        }
-        if (searchCriteria.endDate) {
-            searchCriteria.endDate.setHours(23, 59, 59, 999);
-        }
-
-        // ตรวจสอบว่ากำลังแสดงตารางไหน
-        const isIncomingVisible = document.getElementById('incoming-table').style.display === 'block';
-        const tableBody = isIncomingVisible ? incomingTableBody : outgoingTableBody;
-
-        const rows = tableBody.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length === 0) return;
-
-            try {
-                const rowData = {
-                    nationalId: cells[0].textContent.trim(),
-                    fullName: cells[1].textContent.trim().toLowerCase(),
-                    hospital_tf: cells[2].textContent.trim(),
-                    date: parseDate(cells[3].textContent.trim()),
-                    status: cells[4].textContent.trim()
-                };
-
-                const matches = isMatch(rowData, searchCriteria);
-                row.style.display = matches ? 'table-row' : 'none';
-            } catch (error) {
-                console.error('Error processing row:', error);
-            }
-        });
-    }
-
-    // Event Listeners
-    cancelButton.addEventListener('click', resetSearch);
-    searchButton.addEventListener('click', performSearch);
-    searchForm.addEventListener('submit', performSearch);
-
-    // เพิ่ม Enter key event สำหรับช่อง input
-    [nationalIdInput, fullNameInput].forEach(input => {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                performSearch();
-            }
-        });
-    });
-
-    // Helper functions (ไม่เปลี่ยนแปลง)
-    function parseDate(dateStr) {
-        try {
-            const [month, day, year] = dateStr.split('/').map(num => parseInt(num, 10));
-            const date = new Date(year, month - 1, day);
-            if (isNaN(date.getTime())) {
-                throw new Error('Invalid date');
-            }
-            return date;
-        } catch (error) {
-            console.error('Error parsing date:', dateStr, error);
-            return new Date(0);
-        }
-    }
-
-    function isMatch(rowData, criteria) {
-        if (!rowData || !criteria) return true;
-
-        if (criteria.nationalId && !rowData.nationalId.includes(criteria.nationalId)) return false;
-        if (criteria.fullName && !rowData.fullName.includes(criteria.fullName)) return false;
-        if (criteria.hospital_tf && rowData.hospital_tf !== criteria.hospital_tf) return false;
-        if (criteria.status && rowData.status !== criteria.status) return false;
-
-        if (criteria.startDate && criteria.endDate) {
-            return rowData.date >= criteria.startDate && rowData.date <= criteria.endDate;
-        } else if (criteria.startDate) {
-            return rowData.date >= criteria.startDate;
-        } else if (criteria.endDate) {
-            return rowData.date <= criteria.endDate;
-        }
-
-        return true;
-    }
-});
-</script>
-
 </body>
 
 </html>

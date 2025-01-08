@@ -217,7 +217,7 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
             </div>
             <div class="signature-item">
                 <label>ลงชื่อผู้อนุมัติ</label>
-                <input type="text">
+                <input type="text" value="<?php echo htmlspecialchars($formData['approved_by'] ?? ''); ?>">
                 <div class="form-group">
 
                     <div class="signature-container">
