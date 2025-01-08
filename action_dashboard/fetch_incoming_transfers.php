@@ -12,37 +12,96 @@ try {
     }
 
     $userHospital = $_SESSION['hospital'];
+    
+    // Build WHERE conditions
+    $whereConditions = ["hospital_tf = :hospital", "status != 'ยกเลิก'"];
+    $params = [':hospital' => $userHospital];
+    
+    // Add search conditions
+    if (!empty($_GET['nationalId'])) {
+        $whereConditions[] = "national_id LIKE :nationalId";
+        $params[':nationalId'] = '%' . $_GET['nationalId'] . '%';
+    }
+    
+    if (!empty($_GET['fullName'])) {
+        $whereConditions[] = "LOWER(full_name_tf) LIKE LOWER(:fullName)";
+        $params[':fullName'] = '%' . $_GET['fullName'] . '%';
+    }
+    
+    if (!empty($_GET['startDate'])) {
+        $whereConditions[] = "transfer_date::date >= :startDate";
+        $params[':startDate'] = $_GET['startDate'];
+    }
+    
+    if (!empty($_GET['endDate'])) {
+        $whereConditions[] = "transfer_date::date <= :endDate";
+        $params[':endDate'] = $_GET['endDate'];
+    }
+    
+    if (!empty($_GET['status'])) {
+        $whereConditions[] = "status = :status";
+        $params[':status'] = $_GET['status'];
+    }
 
-    // แก้ไข SQL query เพื่อดึงข้อมูลทั้งหมดที่ส่งมายังโรงพยาบาลของผู้ใช้
+    $whereClause = implode(' AND ', $whereConditions);
+
+    // Get total count for pagination
+    $countSql = "SELECT COUNT(*) FROM transfer_form WHERE $whereClause";
+    $countStmt = $conn->prepare($countSql);
+    $countStmt->execute($params);
+    $totalRows = $countStmt->fetchColumn();
+    
+    // Add pagination
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = 10;
+    $offset = ($page - 1) * $limit;
+    $totalPages = ceil($totalRows / $limit);
+
+    // Main query with pagination
     $sql = "SELECT 
         national_id, 
         full_name_tf, 
         creator_hospital,
         hospital_tf,
         transfer_date::date,
-        COALESCE(status, 'รอการอนุมัติ') as status
+        COALESCE(status, 'อนุมัติ') as status
     FROM transfer_form 
-    WHERE hospital_tf = :hospital 
-    AND status != 'ยกเลิก'
-    ORDER BY transfer_date DESC";
+    WHERE $whereClause
+    AND (status IS NULL OR status != 'รอการอนุมัติ')  -- กรองข้อมูลที่มีสถานะเป็น 'รอการอนุมัติ'
+    ORDER BY transfer_date DESC
+    LIMIT :limit OFFSET :offset";
+
 
     $stmt = $conn->prepare($sql);
-    $stmt->execute([':hospital' => $userHospital]);
     
+    // Bind all parameters including pagination
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    
+    $stmt->execute();
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // แปลงรูปแบบวันที่
+    // Format dates
     foreach ($data as &$row) {
         if (isset($row['transfer_date'])) {
             $date = new DateTime($row['transfer_date']);
-            $row['transfer_date'] = $date->format('d/m/Y');
+            $row['transfer_date'] = $date->format('m/d/Y');
         }
     }
 
     echo json_encode([
         'success' => true, 
         'data' => $data,
-        'hospital' => $userHospital // ส่งชื่อโรงพยาบาลกลับไปด้วย
+        'hospital' => $userHospital,
+        'pagination' => [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalRows' => $totalRows,
+            'rowsPerPage' => $limit
+        ]
     ]);
 
 } catch (PDOException $e) {

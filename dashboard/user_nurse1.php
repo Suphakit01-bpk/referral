@@ -59,6 +59,21 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         .refresh:hover .fa-sync-alt {
             transform: rotate(180deg);
         }
+
+                
+        
+        .logout-button {
+            margin-left: auto; /* Push to right side */
+            background-color: #dc3545;
+        }
+        
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+        
+        .fa-sign-out-alt {
+            margin-right: 5px;
+        }
     </style>
 </head>
 
@@ -68,6 +83,9 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
         <?php echo htmlspecialchars($hospital); ?>
         <a href="history.php" class="nav-button">ดูประวัติ </a>
+        <a href="../action_dashboard/logout.php" class="nav-button logout-button">
+            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+        </a>
     </div>
     <div class="container">
         <div class="form-container">
@@ -125,7 +143,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         <!-- ตารางแสดงข้อมูลผู้ป่วย -->
         <div class="table-container">
             <div class="header-with-button">
-                <div class="header-left">
+            <div class="header-left">
                     <h3>ข้อมูลผู้ป่วย</h3>
                     <div class="table-toggle">
                         <button id="outgoing-button" class="active">ผู้ป่วยที่ส่งออก</button>
@@ -253,23 +271,25 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             </div>
 
             <div id="outgoing-table" class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>เลขประจำตัวประชาชน</th>
-                        <th>ชื่อ - นามสกุล</th>
-                        <th>ส่งตัวไปที่โรงพยาบาล</th>
-                        <th>วันที่ส่งตัว</th>
-                        <th>สถานะ</th>
-                        <th>ตัวจัดการ !! </th> <!-- เพิ่มคอลัมน์ใหม่ -->
-                        <th>ดูใบส่งตัว</th>
-                        <th>ดาวน์โหลด</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                </tbody>
-            </table>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>เลขประจำตัวประชาชน</th>
+                            <th>ชื่อ - นามสกุล</th>
+                            <th>โรงพยาบาลต้นทาง</th> <!-- เปลี่ยนหัวข้อคอลัมน์ -->
+                            <th>วันที่ส่งตัว</th>
+                            <th>สถานะ</th>
+                            <th>ตัวจัดการ</th>
+                            <th>ดูใบส่งตัว</th>
+                            <th>ดาวน์โหลด</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                    </tbody>
+                </table>
             </div>
+
+            <!-- ตารางผู้ป่วยที่ส่งมา -->
             <div id="incoming-table" class="table-wrapper" style="display: none;">
                 <table>
                     <thead>
@@ -1044,6 +1064,208 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             incomingButton.addEventListener('click', () => switchTable(true));
         });
     </script>
-</body>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchButton = document.getElementById('search-button');
+    const searchForm = document.querySelector('.form-container');
+    const nationalIdInput = document.getElementById('national-id');
+    const fullNameInput = document.getElementById('full-name');
+    const hospital_tfSelect = document.getElementById('hospital_tf');
+    const startDateInput = document.getElementById('start-date');
+    const endDateInput = document.getElementById('end-date');
+    const statusSelect = document.getElementById('status');
+    
+    // Function to perform search
+    function performSearch(event) {
+        if (event) event.preventDefault();
+        
+        const isIncomingTable = document.getElementById('incoming-table').style.display === 'block';
+        
+        // Get search criteria
+        const searchCriteria = {
+            nationalId: nationalIdInput.value.trim(),
+            fullName: fullNameInput.value.trim(),
+            startDate: startDateInput.value,
+            endDate: endDateInput.value,
+            status: statusSelect.value
+        };
+        
+        // Call appropriate fetch function based on active table
+        if (isIncomingTable) {
+            fetchIncomingDataWithSearch(searchCriteria);
+        } else {
+            // Existing outgoing search logic
+            window.currentSearchCriteria = searchCriteria;
+            fetchData(1);
+        }
+    }
+    
+    // New function to fetch incoming data with search
+    function fetchIncomingDataWithSearch(searchCriteria) {
+        const queryParams = new URLSearchParams();
+        
+        // Add search parameters
+        Object.entries(searchCriteria).forEach(([key, value]) => {
+            if (value) queryParams.append(key, value);
+        });
+        
+        fetch(`../action_dashboard/fetch_incoming_transfers.php?${queryParams.toString()}`)
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) throw new Error(result.error || 'Failed to fetch data');
+                
+                const tableBody = document.getElementById('incoming-table-body');
+                tableBody.innerHTML = '';
+
+                if (result.data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">ไม่พบข้อมูล</td></tr>';
+                    return;
+                }
+
+                result.data.forEach(row => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${row.national_id || ''}</td>
+                        <td>${row.full_name_tf || ''}</td>
+                        <td>${row.creator_hospital || ''}</td>
+                        <td>${row.transfer_date || ''}</td>
+                        <td>${row.status || ''}</td>
+                        <td>
+                            ${row.status === 'รอการอนุมัติ' ? `
+                                <button class="edit-button" onclick="approveTransfer('${row.national_id}')">
+                                    อนุมัติ
+                                </button>
+                                <button class="cancel-button" onclick="rejectTransfer('${row.national_id}')">
+                                    ปฏิเสธ
+                                </button>
+                            ` : ''}
+                        </td>
+                        <td>
+                            <a href="../form.php?id=${row.national_id}" target="_blank">
+                                <i class="fas fa-eye view-icon"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../download.php?id=${row.national_id}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </td>
+                    `;
+                    tableBody.appendChild(newRow);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('incoming-table-body').innerHTML = 
+                    '<tr><td colspan="8" style="text-align: center; color: red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+            });
+    }
+
+    // Add event listeners
+    searchButton.addEventListener('click', performSearch);
+    searchForm.addEventListener('submit', performSearch);
+
+    // Add Enter key event for search inputs
+    [nationalIdInput, fullNameInput].forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchButton = document.getElementById('search-button');
+    const refreshButton = document.getElementById('refresh-button');
+    const searchForm = document.querySelector('.form-container');
+    const inputs = {
+        nationalId: document.getElementById('national-id'),
+        fullName: document.getElementById('full-name'),
+        hospital_tf: document.getElementById('hospital_tf'),
+        startDate: document.getElementById('start-date'),
+        endDate: document.getElementById('end-date'),
+        status: document.getElementById('status')
+    };
+
+    // ฟังก์ชันรีเฟรชข้อมูล
+    function refreshData() {
+        const icon = refreshButton.querySelector('.fa-sync-alt');
+        icon.style.transform = 'rotate(360deg)';
+
+        // รีเซ็ตฟอร์ม
+        Object.values(inputs).forEach(input => {
+            if (input.type === 'select-one') {
+                input.selectedIndex = 0;
+            } else {
+                input.value = '';
+            }
+        });
+
+        // รีเซ็ตตัวแปรค้นหา
+        window.currentSearchCriteria = null;
+
+        // เช็คว่าอยู่ที่ตารางไหนแล้วโหลดข้อมูลใหม่
+        const isIncomingTableVisible = document.getElementById('incoming-table').style.display === 'block';
+        if (isIncomingTableVisible) {
+            fetchIncomingData();
+        } else {
+            fetchData(1);
+        }
+
+        setTimeout(() => {
+            icon.style.transform = '';
+        }, 300);
+    }
+
+    // ฟังก์ชันค้นหา
+    function performSearch(event) {
+        if (event) {
+            event.preventDefault();
+        }
+
+        const searchCriteria = {
+            nationalId: inputs.nationalId.value.trim(),
+            fullName: inputs.fullName.value.trim(),
+            hospital_tf: inputs.hospital_tf.value,
+            status: inputs.status.value,
+            startDate: inputs.startDate.value,
+            endDate: inputs.endDate.value
+        };
+
+        // เช็คว่าอยู่ที่ตารางไหน
+        const isIncomingTableVisible = document.getElementById('incoming-table').style.display === 'block';
+
+        if (isIncomingTableVisible) {
+            // ค้นหาในตารางผู้ป่วยที่ส่งมา
+            fetchIncomingDataWithSearch(searchCriteria);
+        } else {
+            // ค้นหาในตารางผู้ป่วยที่ส่งออก
+            window.currentSearchCriteria = searchCriteria;
+            fetchData(1);
+        }
+    }
+
+    // Event Listeners
+    refreshButton.addEventListener('click', refreshData);
+    searchButton.addEventListener('click', performSearch);
+    searchForm.addEventListener('submit', performSearch);
+
+    // Enter key event
+    Object.values(inputs).forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+    });
+});
+</script>
+
+</body>
 </html>

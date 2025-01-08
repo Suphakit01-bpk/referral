@@ -59,6 +59,21 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         .refresh:hover .fa-sync-alt {
             transform: rotate(180deg);
         }
+
+                
+        
+        .logout-button {
+            margin-left: auto; /* Push to right side */
+            background-color: #dc3545;
+        }
+        
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+        
+        .fa-sign-out-alt {
+            margin-right: 5px;
+        }
     </style>
 </head>
 
@@ -68,6 +83,9 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
         <?php echo htmlspecialchars($hospital); ?>
         <a href="history.php" class="nav-button">ดูประวัติ </a>
+        <a href="../action_dashboard/logout.php" class="nav-button logout-button">
+            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+        </a>
     </div>
     <div class="container">
         <div class="form-container">
