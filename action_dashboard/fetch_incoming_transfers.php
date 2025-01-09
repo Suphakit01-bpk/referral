@@ -13,8 +13,18 @@ try {
 
     $userHospital = $_SESSION['hospital'];
     
+    // Add pagination parameters
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = 10; // จำนวนรายการต่อหน้า
+    $offset = ($page - 1) * $limit;
+    
     // Build WHERE conditions
-    $whereConditions = ["hospital_tf = :hospital", "status != 'ยกเลิก'"];
+    $whereConditions = [
+        "hospital_tf = :hospital", 
+        "status != 'ยกเลิก'",
+        // แก้ไขเงื่อนไขให้แสดงเฉพาะที่อนุมัติแล้วและอยู่ในช่วง 7 วัน
+        "status = 'อนุมัติ' AND approved_date::timestamp >= CURRENT_TIMESTAMP - INTERVAL '7 days'"
+    ];
     $params = [':hospital' => $userHospital];
     
     // Add search conditions
@@ -50,11 +60,6 @@ try {
     $countStmt = $conn->prepare($countSql);
     $countStmt->execute($params);
     $totalRows = $countStmt->fetchColumn();
-    
-    // Add pagination
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = 10;
-    $offset = ($page - 1) * $limit;
     $totalPages = ceil($totalRows / $limit);
 
     // Main query with pagination
@@ -64,13 +69,18 @@ try {
         creator_hospital,
         hospital_tf,
         transfer_date::date,
-        COALESCE(status, 'อนุมัติ') as status
+        approved_date,
+        COALESCE(status, 'รอการอนุมัติ') as status
     FROM transfer_form 
     WHERE $whereClause
-    AND (status IS NULL OR status != 'รอการอนุมัติ')  -- กรองข้อมูลที่มีสถานะเป็น 'รอการอนุมัติ'
-    ORDER BY transfer_date DESC
+    ORDER BY 
+        CASE 
+            WHEN status = 'รอการอนุมัติ' THEN 1
+            WHEN status = 'อนุมัติ' THEN 2
+            ELSE 3
+        END,
+        transfer_date DESC
     LIMIT :limit OFFSET :offset";
-
 
     $stmt = $conn->prepare($sql);
     
@@ -84,11 +94,18 @@ try {
     $stmt->execute();
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Get actual count of displayed rows
+    $displayedRows = count($data);
+
     // Format dates
     foreach ($data as &$row) {
         if (isset($row['transfer_date'])) {
             $date = new DateTime($row['transfer_date']);
             $row['transfer_date'] = $date->format('m/d/Y');
+        }
+        if (isset($row['approved_date'])) {
+            $approvedDate = new DateTime($row['approved_date']);
+            $row['approved_date'] = $approvedDate->format('m/d/Y H:i:s');
         }
     }
 
@@ -99,7 +116,7 @@ try {
         'pagination' => [
             'currentPage' => $page,
             'totalPages' => $totalPages,
-            'totalRows' => $totalRows,
+            'totalRows' => $displayedRows, // Use actual count instead of total count
             'rowsPerPage' => $limit
         ]
     ]);

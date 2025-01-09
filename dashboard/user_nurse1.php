@@ -836,8 +836,8 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                     : `แสดง ${totalRows} รายการ`;
 
                 // แสดง/ซ่อนปุ่มเปลี่ยนหน้า
-                prevButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
-                nextButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
+                // prevButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
+                // nextButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
 
                 // อัพเดทสถานะปุ่ม
                 if (shouldShowPagination) {
@@ -940,6 +940,28 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
 
             // ฟังก์ชันสลับตาราง
             function switchTable(showIncoming) {
+                // Reset all search form inputs
+                const inputs = {
+                    nationalId: document.getElementById('national-id'),
+                    fullName: document.getElementById('full-name'),
+                    hospital_tf: document.getElementById('hospital_tf'),
+                    startDate: document.getElementById('start-date'),
+                    endDate: document.getElementById('end-date'),
+                    status: document.getElementById('status')
+                };
+
+                // Clear all form inputs
+                Object.values(inputs).forEach(input => {
+                    if (input.type === 'select-one') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                });
+
+                // Reset search criteria
+                window.currentSearchCriteria = null;
+
                 if (showIncoming) {
                     outgoingTable.style.display = 'none';
                     incomingTable.style.display = 'block';
@@ -958,22 +980,36 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             }
 
             // ฟังก์ชันดึงข้อมูลผู้ป่วยที่ส่งมา
-            function fetchIncomingData() {
-                fetch('../action_dashboard/fetch_incoming_transfers.php')
+            function fetchIncomingData(page = 1) {
+                const queryParams = new URLSearchParams();
+                queryParams.set('page', page.toString());
+                
+                // Add current search criteria if exists
+                if (window.currentSearchCriteria) {
+                    Object.entries(window.currentSearchCriteria).forEach(([key, value]) => {
+                        if (value) queryParams.append(key, value);
+                    });
+                }
+            
+                fetch(`../action_dashboard/fetch_incoming_transfers.php?${queryParams.toString()}`)
                     .then(response => response.json())
                     .then(result => {
-                        if (!result.success) {
-                            throw new Error(result.error || 'Failed to fetch data');
-                        }
-
+                        if (!result.success) throw new Error(result.error || 'Failed to fetch data');
+                        
                         const tableBody = document.getElementById('incoming-table-body');
                         tableBody.innerHTML = '';
 
                         if (result.data.length === 0) {
-                            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">ไม่พบข้อมูลการส่งตัวผู้ป่วย</td></tr>';
+                            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">ไม่พบข้อมูล</td></tr>';
+                            
+                            // อัพเดทข้อมูล pagination สำหรับกรณีไม่มีข้อมูล
+                            const pageInfo = document.getElementById('page-info');
+                            pageInfo.textContent = 'หน้า 1 จาก 1 (0 รายการ)';
+                            
                             return;
                         }
 
+                        // แสดงข้อมูลในตาราง
                         result.data.forEach(row => {
                             const newRow = document.createElement('tr');
                             newRow.innerHTML = `
@@ -1005,6 +1041,21 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             `;
                             tableBody.appendChild(newRow);
                         });
+
+                        // อัพเดทข้อมูล pagination
+                        const pageInfo = document.getElementById('page-info');
+                        const { currentPage, totalPages, totalRows } = result.pagination;
+                        pageInfo.textContent = `หน้า ${currentPage} จาก ${totalPages} (${totalRows} รายการ)`;
+
+                        // อัพเดทสถานะปุ่ม pagination
+                        const prevButton = document.getElementById('prev-page');
+                        const nextButton = document.getElementById('next-page');
+                        prevButton.disabled = currentPage <= 1;
+                        nextButton.disabled = currentPage >= totalPages;
+
+                        // เก็บข้อมูล pagination สำหรับการใช้งานต่อไป
+                        window.currentPage = currentPage;
+                        window.totalPages = totalPages;
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -1102,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // New function to fetch incoming data with search
-    function fetchIncomingDataWithSearch(searchCriteria) {
+    window.fetchIncomingDataWithSearch = function(searchCriteria) {
         const queryParams = new URLSearchParams();
         
         // Add search parameters
@@ -1154,6 +1205,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     tableBody.appendChild(newRow);
                 });
+
+                // Update pagination info for incoming table
+                const pageInfo = document.getElementById('page-info');
+                const { currentPage, totalPages, totalRows } = result.pagination;
+                pageInfo.textContent = `หน้า ${currentPage} จาก ${totalPages} (${totalRows} รายการ)`;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -1212,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // เช็คว่าอยู่ที่ตารางไหนแล้วโหลดข้อมูลใหม่
         const isIncomingTableVisible = document.getElementById('incoming-table').style.display === 'block';
         if (isIncomingTableVisible) {
-            fetchIncomingData();
+            window.fetchIncomingData();
         } else {
             fetchData(1);
         }
@@ -1264,6 +1320,88 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Make fetchIncomingData globally available
+    window.fetchIncomingData = function(page = 1) {
+        const queryParams = new URLSearchParams();
+        queryParams.set('page', page.toString());
+        
+        // Add current search criteria if exists
+        if (window.currentSearchCriteria) {
+            Object.entries(window.currentSearchCriteria).forEach(([key, value]) => {
+                if (value) queryParams.append(key, value);
+            });
+        }
+        
+        fetch(`../action_dashboard/fetch_incoming_transfers.php?${queryParams.toString()}`)
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) throw new Error(result.error || 'Failed to fetch data');
+                
+                const tableBody = document.getElementById('incoming-table-body');
+                tableBody.innerHTML = '';
+
+                if (result.data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">ไม่พบข้อมูล</td></tr>';
+                    return;
+                }
+
+                // Render table data
+                result.data.forEach(row => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${row.national_id || ''}</td>
+                        <td>${row.full_name_tf || ''}</td>
+                        <td>${row.creator_hospital || ''}</td>
+                        <td>${row.transfer_date || ''}</td>
+                        <td>${row.status || ''}</td>
+                        <td>
+                            ${row.status === 'รอการอนุมัติ' ? `
+                                <button class="edit-button" onclick="approveTransfer('${row.national_id}')">
+                                    อนุมัติ
+                                </button>
+                                <button class="cancel-button" onclick="rejectTransfer('${row.national_id}')">
+                                    ปฏิเสธ
+                                </button>
+                            ` : ''}
+                        </td>
+                        <td>
+                            <a href="../form.php?id=${row.national_id}" target="_blank">
+                                <i class="fas fa-eye view-icon"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../download.php?id=${row.national_id}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </td>
+                    `;
+                    tableBody.appendChild(newRow);
+                });
+
+                // Update pagination
+                const pageInfo = document.getElementById('page-info');
+                const { currentPage, totalPages, totalRows } = result.pagination;
+                pageInfo.textContent = `หน้า ${currentPage} จาก ${totalPages} (${totalRows} รายการ)`;
+
+                // Update pagination buttons
+                const prevButton = document.getElementById('prev-page');
+                const nextButton = document.getElementById('next-page');
+                prevButton.disabled = currentPage <= 1;
+                nextButton.disabled = currentPage >= totalPages;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('incoming-table-body').innerHTML = 
+                    '<tr><td colspan="8" style="text-align: center; color: red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+            });
+    };
+
+    // ...rest of your existing code...
 });
 </script>
 
