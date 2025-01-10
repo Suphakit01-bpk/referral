@@ -808,8 +808,8 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                     : `แสดง ${totalRows} รายการ`;
 
                 // แสดง/ซ่อนปุ่มเปลี่ยนหน้า
-                prevButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
-                nextButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
+                // prevButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
+                // nextButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
 
                 // อัพเดทสถานะปุ่ม
                 if (shouldShowPagination) {

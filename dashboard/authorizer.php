@@ -216,12 +216,18 @@ if ($username) {
                                 echo "<td><a href='#'>ดาวน์โหลด</a></td>";
                                 echo "<td>
                                         <button class='edit-button' 
-                                            data-id='".$row['id']."' 
-                                            data-national-id='".$row['national_id']."' 
-                                            data-full-name='".$row['full_name_tf']."' 
-                                            data-hospital-tf='".$row['hospital_tf']."' 
-                                            data-transfer-date='".$row['transfer_date']."' 
-                                            data-status='".$row['status']."'>
+                                            data-id='" . htmlspecialchars($row['id']) . "' 
+                                            data-national-id='" . htmlspecialchars($row['national_id']) . "' 
+                                            data-full-name='" . htmlspecialchars($row['full_name_tf']) . "' 
+                                            data-hospital='" . htmlspecialchars($row['hospital_tf']) . "' 
+                                            data-transfer-date='" . htmlspecialchars($row['transfer_date']) . "' 
+                                            data-company='" . htmlspecialchars($row['company']) . "'
+                                            data-address='" . htmlspecialchars($row['address']) . "'
+                                            data-phone='" . htmlspecialchars($row['phone']) . "'
+                                            data-age='" . htmlspecialchars($row['age']) . "'
+                                            data-diagnosis='" . htmlspecialchars($row['diagnosis']) . "'
+                                            data-reason='" . htmlspecialchars($row['reason']) . "'
+                                        >
                                             <i class='fas fa-edit'></i> แก้ไข
                                         </button>
                                         <button class='delete-button'>
@@ -555,6 +561,39 @@ if ($username) {
                 } else if (event.target.classList.contains('delete-button')) {
                     const row = event.target.closest('tr');
                     row.remove();
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...existing code...
+
+            // แก้ไขการ handle click event สำหรับปุ่ม edit
+            document.body.addEventListener('click', function(event) {
+                if (event.target.closest('.edit-button')) {
+                    const button = event.target.closest('.edit-button');
+                    const row = button.closest('tr');
+                    
+                    // ดึงข้อมูลจาก data attributes
+                    document.getElementById('national-id-popup').value = button.dataset.nationalId;
+                    document.getElementById('full-name-popup').value = button.dataset.fullName;
+                    document.getElementById('hospital-popup').value = button.dataset.hospital;
+                    document.getElementById('transfer-date-popup').value = button.dataset.transferDate;
+                    document.getElementById('company-popup').value = button.dataset.company;
+                    document.getElementById('address-popup').value = button.dataset.address;
+                    document.getElementById('phone-popup').value = button.dataset.phone;
+                    document.getElementById('age-popup').value = button.dataset.age;
+                    document.getElementById('diagnosis-popup').value = button.dataset.diagnosis;
+                    document.getElementById('reason-popup').value = button.dataset.reason;
+
+                    editingRow = row;
+
+                    // แสดงฟอร์ม
+                    popupForm.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        popupForm.classList.add('show');
+                    });
                 }
             });
         });
