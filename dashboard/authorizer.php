@@ -65,6 +65,8 @@ if ($username) {
     <link rel="shortcut icon" type="image/x-icon" href="http://192.168.13.31/seedhelpdesk/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui/material-ui.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body>
@@ -125,7 +127,7 @@ if ($username) {
 
         <!-- ตารางแสดงข้อมูลผู้ป่วย -->
         <div class="table-container">
-            <div class="header-with-button">
+        <div class="header-with-button">
                 <h3>ข้อมูลผู้ป่วย</h3>
                 <button id="add-form-button" type="button">เพิ่มฟอร์มส่งตัว</button>
 
@@ -135,43 +137,113 @@ if ($username) {
                         <span id="close-popup" class="close-popup">&times;</span>
                         <h3>ฟอร์มส่งตัวผู้ป่วย</h3>
                         <form id="transfer-form">
-                            <label for="national-id-popup">เลขประจำตัวประชาชน</label>
+                            <div class="checkbox-group">
+                                    <label>ประเภทการเรียกเก็บ:</label>
+                                    <div class="checkbox-options">
+                                        <label>
+                                            <input type="checkbox" id="bill-company" name="billing_type[]" value="company">
+                                            เรียกเก็บบริษัท
+                                        </label><br>
+                                        <label>
+                                            <input type="checkbox" id="bill-employee" name="billing_type[]"
+                                                value="employee">
+                                            เรียกเก็บพนักงาน
+                                        </label><br>
+                                        <label>
+                                            <input type="checkbox" id="bill-fund" name="billing_type[]" value="fund">
+                                            เรียกเก็บกองทุนเงินทดแทน
+                                        </label><br>
+                                        <label class="insurance-container">
+                                            <input type="checkbox" id="bill-insurance" name="billing_type[]"
+                                                value="insurance">
+                                            เรียกเก็บบริษัทประกัน
+                                            <input type="text" id="insurance-name" class="insurance-input"
+                                                placeholder="ระบุชื่อบริษัทประกัน" style="display: none;">
+                                        </label>
+                                    </div>
+                                </div>
+                                <label for="national-id-popup">เลขประจำตัวประชาชน <span class="required">*</span></label>
                             <input id="national-id-popup" placeholder="กรุณาป้อนเลขประจำตัวประชาชน" type="text"
-                                maxlength="13" required>
+                                maxlength="13" pattern="\d{13}" title="กรุณากรอกเลขประจำตัวประชาชน 13 หลัก" required>
 
-                            <label for="full-name-popup">ชื่อ-นามสกุล</label>
+                             <label for="full-name-popup">ชื่อ-นามสกุล</label>
                             <input id="full-name-popup" placeholder="กรุณาป้อนชื่อ-นามสกุล" type="text" required>
 
                             <label for="hospital-popup">ส่งตัวไปที่โรงพยาบาล</label>
-                            <select id="hospital-popup" required>
+                            <select id="hospital-popup" name="approved_hospital" required>
                                 <option value="" disabled selected>กรุณาเลือกโรงพยาบาล</option>
-                                <option value="โรงพยาบาลบางปะกอก 9">โรงพยาบาลบางปะกอก 9</option>
-                                <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                                <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
                                 <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
+                                <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                                <option value="โรงพยาบาลบางปะกอก 8">โรงพยาบาลบางปะกอก 8</option>
+                                <option value="โรงพยาบาลบางปะกอก 2 รังสิต">โรงพยาบาลบางปะกอก 2 รังสิต</option>
+                                <option value="โรงพยาบาลบางปะกอกสมุทรปราการ">โรงพยาบาลบางปะกอกสมุทรปราการ</option>
+                                <option value="โรงพยาบาลปิยะเวท">โรงพยาบาลปิยะเวท</option>
+                                <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
                             </select>
-
+                            
                             <label for="transfer-date-popup">วันที่ส่งตัว</label>
                             <input id="transfer-date-popup" type="date" required>
-
-                            <!-- New fields to match form.html -->
+                            
                             <label for="company-popup">บริษัท/โรงงาน</label>
                             <input id="company-popup" placeholder="กรุณาป้อนชื่อบริษัท/โรงงาน" type="text">
 
                             <label for="address-popup">ที่อยู่</label>
                             <input id="address-popup" placeholder="กรุณาป้อนที่อยู่" type="text">
-
+                            
                             <label for="phone-popup">โทรศัพท์</label>
-                            <input id="phone-popup" placeholder="กรุณาป้อนเบอร์โทรศัพท์" type="text">
+                            <input id="phone-popup" placeholder="กรุณาป้อนเบอร์โทรศัพท์" type="text" maxlength="10"
+                                pattern="\d{9,10}" title="กรุณากรอกเบอร์โทรศัพท์ 9-10 หลัก">
+                                
+                                <label for="age-popup">อายุ</label>
+                            <input id="age-popup" placeholder="กรุณาป้อนอายุ" type="number" min="0" max="150"
+                                title="กรุณากรอกอายุระหว่าง 0-150 ปี">
+                            
+                                <div class="checkbox-group">
+                                <label>เพื่อ:</label>
+                                <div class="checkbox-options">
+                                    <label>
+                                        <input type="checkbox" id="purpose-checkup" name="purpose[]" value="checkup">
+                                        ตรวจรักษา
+                                    </label>
+                                    <br>
+                                    <label>
+                                        <input type="checkbox" id="purpose-annual" name="purpose[]" value="annual">
+                                        ตรวจร่างกายประจำปี
+                                    </label><br>
+                                    <label>
+                                        <input type="checkbox" id="purpose-new" name="purpose[]" value="new">
+                                        ตรวจร่างกายพนักงานใหม่
+                                    </label><br>
+                                    <label>
+                                        <input type="checkbox" id="purpose-continuous" name="purpose[]"
+                                            value="continuous">
+                                        รักษาต่อเนื่องจนหายที่ โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล
+                                    </label>
+                                </div>
+                            </div>
 
-                            <label for="age-popup">อายุ</label>
-                            <input id="age-popup" placeholder="กรุณาป้อนอายุ" type="number">
+                         
 
-                            <label for="diagnosis-popup">การวินิจฉัยโรค</label>
-                            <input id="diagnosis-popup" placeholder="กรุณาป้อนการวินิจฉัยโรค" type="text">
+                            <label for="approved-hospital-popup">โรงพยาบาลที่อนุมัติ</label>
+                            <select id="approved-hospital-popup" required>
+                                <option value="" disabled selected>กรุณาเลือกโรงพยาบาล</option>
+                                <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
+                                <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
+                                <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                                <option value="โรงพยาบาลบางปะกอก 8">โรงพยาบาลบางปะกอก 8</option>
+                                <option value="โรงพยาบาลบางปะกอก 2 รังสิต">โรงพยาบาลบางปะกอก 2 รังสิต</option>
+                                <option value="โรงพยาบาลบางปะกอกสมุทรปราการ">โรงพยาบาลบางปะกอกสมุทรปราการ</option>
+                                <option value="โรงพยาบาลปิยะเวท">โรงพยาบาลปิยะเวท</option>
+                                <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
+                            </select>
 
-                            <label for="reason-popup">เหตุผลในการส่งตัว</label>
-                            <input id="reason-popup" placeholder="กรุณาป้อนเหตุผลในการส่งตัว" type="text">
+                            <label for="diagnosis-popup"name="diagnosis" >การวินิจฉัยโรค</label>
+                            <input id="diagnosis-popup"name="diagnosis" placeholder="กรุณาป้อนการวินิจฉัยโรค" type="text">
 
+                            <label for="reason-popup" name="reason">เหตุผลในการส่งตัว</label>
+                            <input id="reason-popup"name="reason" placeholder="กรุณาป้อนเหตุผลในการส่งตัว" type="text">
+                          
                             <button type="submit">บันทึก</button>
                         </form>
                     </div>
@@ -227,10 +299,14 @@ if ($username) {
                                             data-age='" . htmlspecialchars($row['age']) . "'
                                             data-diagnosis='" . htmlspecialchars($row['diagnosis']) . "'
                                             data-reason='" . htmlspecialchars($row['reason']) . "'
+                                            data-billing-type='" . htmlspecialchars(json_encode($row['billing_type'])) . "'
+                                            data-insurance-company='" . htmlspecialchars($row['insurance_company']) . "'
+                                            data-purpose='" . htmlspecialchars(json_encode($row['purpose'])) . "'
+                                            data-approved-hospital='" . htmlspecialchars($row['approved_hospital']) . "'
                                         >
                                             <i class='fas fa-edit'></i> แก้ไข
                                         </button>
-                                        <button class='delete-button'>
+                                        <button class='delete-button' data-id='" . htmlspecialchars($row['id']) . "'>
                                             <i class='fas fa-trash-alt'></i> ยกเลิก
                                         </button>
                                       </td>";
@@ -457,12 +533,14 @@ if ($username) {
                 const address = document.getElementById('address-popup').value.trim();
                 const phone = document.getElementById('phone-popup').value.trim();
                 const age = document.getElementById('age-popup').value.trim();
+                const ap_hospital = document.getElementById('approved-hospital-popup').value.trim();
+
                 const diagnosis = document.getElementById('diagnosis-popup').value.trim();
                 const reason = document.getElementById('reason-popup').value.trim();
                 const status = "รอการอนุมัติ"; // Set status to "รอการอนุมัติ"
 
                 // Validate inputs
-                if (!nationalId || !fullName || !hospital || !transferDate || !company || !address || !phone || !age || !diagnosis || !reason) {
+                if (!nationalId || !fullName || !hospital || !transferDate || !company || !address || !phone || !age || !ap_hospital || !diagnosis || !reason) {
                     alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
                     return;
                 }
@@ -548,6 +626,8 @@ if ($username) {
                     document.getElementById('address-popup').value = ''; // Add logic to fill this field if needed
                     document.getElementById('phone-popup').value = ''; // Add logic to fill this field if needed
                     document.getElementById('age-popup').value = ''; // Add logic to fill this field if needed
+                    document.getElementById('approved-hospital-popup').value = columns[20].textContent; // Add logic to fill this field if needed
+
                     document.getElementById('diagnosis-popup').value = ''; // Add logic to fill this field if needed
                     document.getElementById('reason-popup').value = ''; // Add logic to fill this field if needed
 
@@ -584,6 +664,8 @@ if ($username) {
                     document.getElementById('address-popup').value = button.dataset.address;
                     document.getElementById('phone-popup').value = button.dataset.phone;
                     document.getElementById('age-popup').value = button.dataset.age;
+                    document.getElementById('approved-hospital-popup').value = button.dataset.approvedHospital;
+
                     document.getElementById('diagnosis-popup').value = button.dataset.diagnosis;
                     document.getElementById('reason-popup').value = button.dataset.reason;
 

@@ -1,4 +1,3 @@
-
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -15,10 +14,13 @@ try {
         throw new Exception('Invalid JSON data');
     }
 
-    $sql = "UPDATE transfer_form SET status = 'ยกเลิก' WHERE national_id = :national_id";
+    $sql = "UPDATE transfer_form SET status = 'ยกเลิก' WHERE national_id = :national_id AND id = :id";
     $stmt = $conn->prepare($sql);
     
-    $result = $stmt->execute([':national_id' => $data['nationalId']]);
+    $result = $stmt->execute([
+        ':national_id' => $data['nationalId'],
+        ':id' => $data['id']
+    ]);
 
     if ($result) {
         echo json_encode(['success' => true]);

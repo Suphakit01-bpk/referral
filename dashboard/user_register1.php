@@ -498,7 +498,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                 <button class="edit-button" onclick="editTransfer('${row.national_id}', ${row.id})">
                                     แก้ไข
                                 </button>
-                                <button class="cancel-button" onclick="cancelTransfer('${row.national_id}')">
+                                <button class="cancel-button" onclick="cancelTransfer('${row.national_id}', ${row.id})">
                                     ยกเลิก
                                 </button>
                             </td>
@@ -697,7 +697,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             }
 
             // เพิ่มฟังก์ชัน cancelTransfer
-            window.cancelTransfer = function(nationalId) {
+            window.cancelTransfer = function(nationalId, id) {
                 if (confirm('คุณต้องการยกเลิกการส่งตัวนี้ใช่หรือไม่?')) {
                     fetch('../action_dashboard/cancel_transfer.php', {
                             method: 'POST',
@@ -705,7 +705,8 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                nationalId: nationalId
+                                nationalId: nationalId,
+                                id: id
                             })
                         })
                         .then(response => response.json())
@@ -855,7 +856,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                 <td>${row.status || ''}</td>
                                 <td>
                                     <button class="edit-button" onclick="editTransfer('${row.national_id}', ${row.id})">แก้ไข</button>
-                                    <button class="cancel-button" onclick="cancelTransfer('${row.national_id}')">ยกเลิก</button>
+                                    <button class="cancel-button" onclick="cancelTransfer('${row.national_id}', ${row.id})">ยกเลิก</button>
                                 </td>
                                 <td>
                                     <a href="../form2.php?id=${row.id}" target="_blank">

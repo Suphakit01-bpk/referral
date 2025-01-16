@@ -9,7 +9,7 @@ if ($_SESSION['role'] === 'register' || $_SESSION['role'] === 'authorizer' || $_
 
 
 // Get fullname from session
-$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน'; 
+$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน';
 $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไป';
 
 // Get hospital from session
@@ -41,31 +41,72 @@ $userHospital = $_SESSION['hospital'] ?? '';
             transform: translateY(0);
             opacity: 1;
         }
+
+        .refresh {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .refresh:hover {
+            background-color: #45a049;
+        }
+
+        .fa-sync-alt {
+            transition: transform 0.3s ease;
+        }
+
+        .refresh:hover .fa-sync-alt {
+            transform: rotate(180deg);
+        }
+
+
+
+        .logout-button {
+            margin-left: auto;
+            /* Push to right side */
+            background-color: #dc3545;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+
+        .fa-sign-out-alt {
+            margin-right: 5px;
+        }
     </style>
 </head>
 
 <body>
-<div class="navbar">
-    <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
-     <?php echo htmlspecialchars($hospital); ?>
-    <a href="<?php echo getRedirectUrl($_SESSION['role']); ?>" class="nav-button">กลับหน้าหลัก</a>
-</div>
+    <div class="navbar">
+        <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
+        <?php echo htmlspecialchars($hospital); ?>
+        <a href="<?php echo getRedirectUrl($_SESSION['role']); ?>" class="nav-button">กลับหน้าหลัก</a>
+    </div>
 
-<?php
-function getRedirectUrl($role) {
-    switch ($role) {
-        case 'register':
-            return 'user_register.php'; // เปลี่ยนเส้นทางสำหรับ role 'register'
-        case 'authorizer':
-            return 'authorizer.php'; // เปลี่ยนเส้นทางสำหรับ role 'authorizer'
-        case 'nurse':
-            return 'user_nurse.php'; // เปลี่ยนเส้นทางสำหรับ role 'nurse'
-        default:
-            return '../SignupForm/signin.php'; // หากไม่มี role ที่กำหนด
+    <?php
+    function getRedirectUrl($role)
+    {
+        switch ($role) {
+            case 'register':
+                return 'user_register.php'; // เปลี่ยนเส้นทางสำหรับ role 'register'
+            case 'authorizer':
+                return 'authorizer.php'; // เปลี่ยนเส้นทางสำหรับ role 'authorizer'
+            case 'nurse':
+                return 'user_nurse.php'; // เปลี่ยนเส้นทางสำหรับ role 'nurse'
+            default:
+                return '../SignupForm/signin.php'; // หากไม่มี role ที่กำหนด
+        }
     }
-}
-?>
+    ?>
 
     <div class="container">
         <div class="form-container">
@@ -94,27 +135,30 @@ function getRedirectUrl($role) {
                     <select id="hospital_tf">
                         <option value="" disabled selected>กรุณาเลือกโรงพยาบาล</option>
                         <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
-                                <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
-                                <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
-                                <option value="โรงพยาบาลบางปะกอก 8">โรงพยาบาลบางปะกอก 8</option>
-                                <option value="โรงพยาบาลบางปะกอก 2 รังสิต">โรงพยาบาลบางปะกอก 2 รังสิต</option>
-                                <option value="โรงพยาบาลบางปะกอกสมุทรปราการ">โรงพยาบาลบางปะกอกสมุทรปราการ</option>
-                                <option value="โรงพยาบาลปิยะเวท">โรงพยาบาลปิยะเวท</option>
-                                <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
+                        <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
+                        <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                        <option value="โรงพยาบาลบางปะกอก 8">โรงพยาบาลบางปะกอก 8</option>
+                        <option value="โรงพยาบาลบางปะกอก 2 รังสิต">โรงพยาบาลบางปะกอก 2 รังสิต</option>
+                        <option value="โรงพยาบาลบางปะกอกสมุทรปราการ">โรงพยาบาลบางปะกอกสมุทรปราการ</option>
+                        <option value="โรงพยาบาลปิยะเวท">โรงพยาบาลปิยะเวท</option>
+                        <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
                     </select>
                 </div>
                 <div>
                     <label for="status">สถานะการส่งตัว:</label>
                     <select id="status">
+                        <option value="" disabled selected>กรุณาเลือกสถานะ</option>
                         <option value="อนุมัติ">อนุมัติ</option>
                         <option value="ยกเลิก">ยกเลิก</option>
-                        <option value="" >ไม่ระบุ</option>
+
                     </select>
                 </div>
             </div>
             <div class="form-actions">
                 <button id="search-button" type="button">Search</button>
-                <button id="cancel-button" class="cancel" type="button">ยกเลิก</button>
+                <button id="refresh-button" class="refresh" type="button">
+                    <i class="fas fa-sync-alt"></i> รีเฟรช
+                </button>
             </div>
         </div>
 
@@ -146,6 +190,7 @@ function getRedirectUrl($role) {
             </div>
         </div>
     </div>
+
     <script>
         // srcipt ปุ่ม next , prev
         document.addEventListener('DOMContentLoaded', function() {
@@ -201,82 +246,73 @@ function getRedirectUrl($role) {
     <script>
         //script ปุ่ม search
         document.addEventListener('DOMContentLoaded', function() {
-            const cancelButton = document.getElementById('cancel-button');
             const searchButton = document.getElementById('search-button');
+            const refreshButton = document.getElementById('refresh-button');
             const searchForm = document.querySelector('.form-container');
-            const nationalIdInput = document.getElementById('national-id');
-            const fullNameInput = document.getElementById('full-name');
-            const hospital_tfSelect = document.getElementById('hospital_tf');
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
-            const tableBody = document.getElementById('table-body');
-            const status = document.getElementById('status');
+            const inputs = {
+                nationalId: document.getElementById('national-id'),
+                fullName: document.getElementById('full-name'),
+                hospital_tf: document.getElementById('hospital_tf'),
+                startDate: document.getElementById('start-date'),
+                endDate: document.getElementById('end-date'),
+                status: document.getElementById('status')
+            };
 
-            // ฟังก์ชันสำหรับรีเซ็ตการค้นหา
-            function resetSearch() {
-                nationalIdInput.value = '';
-                fullNameInput.value = '';
-                hospital_tfSelect.selectedIndex = 0;
-                startDateInput.value = '';
-                endDateInput.value = '';
-                status.selectedIndex = 0;
-                fetchData(); // รีโหลดข้อมูลทั้งหมด
+            // ฟังก์ชันรีเฟรชข้อมูล
+            function refreshData() {
+                // เพิ่มเอฟเฟกต์การหมุนไอคอน
+                const icon = refreshButton.querySelector('.fa-sync-alt');
+                icon.style.transform = 'rotate(360deg)';
+
+                // รีเซ็ตฟอร์ม
+                Object.values(inputs).forEach(input => {
+                    if (input.type === 'select-one') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                });
+
+                // รีเซ็ตตัวแปรค้นหา
+                window.currentSearchCriteria = null;
+
+                // โหลดข้อมูลใหม่
+                fetchData(1);
+
+                // รีเซ็ตการหมุนไอคอนหลังจาก animation เสร็จสิ้น
+                setTimeout(() => {
+                    icon.style.transform = '';
+                }, 300);
             }
 
-            // s
+            // ฟังก์ชันค้นหา
             function performSearch(event) {
-                // ป้องกันการ submit form
                 if (event) {
                     event.preventDefault();
                 }
 
                 const searchCriteria = {
-                    nationalId: nationalIdInput.value.trim(),
-                    fullName: fullNameInput.value.trim().toLowerCase(),
-                    hospital_tf: hospital_tfSelect.value,
-                    status: status.value,
-                    startDate: startDateInput.value ? new Date(startDateInput.value) : null,
-                    endDate: endDateInput.value ? new Date(endDateInput.value) : null
+                    nationalId: inputs.nationalId.value.trim(),
+                    fullName: inputs.fullName.value.trim(),
+                    hospital_tf: inputs.hospital_tf.value,
+                    status: inputs.status.value,
+                    startDate: inputs.startDate.value,
+                    endDate: inputs.endDate.value
                 };
 
-                if (searchCriteria.startDate) {
-                    searchCriteria.startDate.setHours(0, 0, 0, 0);
-                }
-                if (searchCriteria.endDate) {
-                    searchCriteria.endDate.setHours(23, 59, 59, 999);
-                }
+                // เก็บค่าการค้นหาไว้
+                window.currentSearchCriteria = searchCriteria;
 
-                const rows = tableBody.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length === 0) return;
-
-                    try {
-                        const rowData = {
-                            nationalId: cells[0].textContent.trim(),
-                            fullName: cells[1].textContent.trim().toLowerCase(),
-                            hospital_tf: cells[2].textContent.trim(),
-                            date: parseDate(cells[3].textContent.trim()),
-                            status: cells[4].textContent.trim()
-                        };
-
-                        const matches = isMatch(rowData, searchCriteria);
-                        row.style.display = matches ? 'table-row' : 'none';
-                    } catch (error) {
-                        console.error('Error processing row:', error);
-                    }
-                });
+                // ส่งคำค้นหาไปยัง API
+                fetchData(1);
             }
 
             // Event Listeners
-            cancelButton.addEventListener('click', resetSearch);
+            refreshButton.addEventListener('click', refreshData);
             searchButton.addEventListener('click', performSearch);
 
-            // เพิ่ม Form Submit Event
-            searchForm.addEventListener('submit', performSearch);
-
-            // เพิ่ม Enter key event สำหรับช่อง input
-            [nationalIdInput, fullNameInput].forEach(input => {
+            // เพิ่ม Event Listener สำหรับ Enter key ในช่องค้นหา
+            Object.values(inputs).forEach(input => {
                 input.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -285,42 +321,11 @@ function getRedirectUrl($role) {
                 });
             });
 
-            // Helper functions
-            function parseDate(dateStr) {
-                try {
-                    const [month, day, year] = dateStr.split('/').map(num => parseInt(num, 10));
-                    const date = new Date(year, month - 1, day);
-                    if (isNaN(date.getTime())) {
-                        throw new Error('Invalid date');
-                    }
-                    return date;
-                } catch (error) {
-                    console.error('Error parsing date:', dateStr, error);
-                    return new Date(0); // Return epoch date as fallback
-                }
-            }
-
-            function isMatch(rowData, criteria) {
-                if (!rowData || !criteria) return true;
-
-                if (criteria.nationalId && !rowData.nationalId.includes(criteria.nationalId)) return false;
-                if (criteria.fullName && !rowData.fullName.includes(criteria.fullName)) return false;
-                if (criteria.hospital_tf && !rowData.hospital_tf.includes(criteria.hospital_tf)) return false;
-                if (criteria.status && rowData.status !== criteria.status) return false;
-
-                if (criteria.startDate && criteria.endDate) {
-                    return rowData.date >= criteria.startDate && rowData.date <= criteria.endDate;
-                } else if (criteria.startDate) {
-                    return rowData.date >= criteria.startDate;
-                } else if (criteria.endDate) {
-                    return rowData.date <= criteria.endDate;
-                }
-
-                return true;
-            }
+            // Initial load
+            fetchData(1);
         });
-        
     </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const popupForm = document.getElementById('popup-form');
@@ -368,5 +373,92 @@ function getRedirectUrl($role) {
             fetchData();
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.fetchData = function(page = 1) {
+                const queryParams = new URLSearchParams();
+                queryParams.set('page', page.toString());
+
+                if (window.currentSearchCriteria) {
+                    Object.entries(window.currentSearchCriteria).forEach(([key, value]) => {
+                        if (value) {
+                            queryParams.set(key, value);
+                        }
+                    });
+                }
+
+                fetch(`../action_dashboard/fetch_history.php?${queryParams.toString()}`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (!result.success) {
+                            throw new Error(result.error || 'Failed to fetch data');
+                        }
+
+                        const tableBody = document.getElementById('table-body');
+                        tableBody.innerHTML = '';
+
+                        if (result.data.length === 0) {
+                            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">ไม่พบข้อมูล</td></tr>';
+                        } else {
+                            result.data.forEach(row => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                            <td>${row.national_id || ''}</td>
+                            <td>${row.full_name_tf || ''}</td>
+                            <td>${row.hospital_tf || ''}</td>
+                            <td>${row.transfer_date || ''}</td>
+                            <td>${row.status || ''}</td>
+                            <td>
+                                <a href="../form2.php?id=${row.id}" target="_blank">
+                                    <i class="fas fa-eye view-icon"></i>
+                                </a>
+                            </td>
+                            <td><a href="#">ดาวน์โหลด</a></td>
+                        `;
+                                tableBody.appendChild(tr);
+                            });
+                        }
+
+                        // Update pagination
+                        const pageInfo = document.getElementById('page-info');
+                        const prevButton = document.getElementById('prev-page');
+                        const nextButton = document.getElementById('next-page');
+
+                        if (result.pagination) {
+                            const {
+                                currentPage,
+                                totalPages,
+                                totalRows
+                            } = result.pagination;
+                            pageInfo.textContent = `หน้า ${currentPage} จาก ${totalPages} (${totalRows} รายการ)`;
+                            prevButton.disabled = currentPage <= 1;
+                            nextButton.disabled = currentPage >= totalPages;
+                            window.currentPage = currentPage;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('table-body').innerHTML =
+                            '<tr><td colspan="7" style="text-align: center; color: red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+                    });
+            };
+
+            // Add pagination event listeners
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (window.currentPage > 1) {
+                    fetchData(window.currentPage - 1);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                fetchData(window.currentPage + 1);
+            });
+
+            // Initial load
+            fetchData(1);
+        });
+    </script>
 </body>
+
 </html>
