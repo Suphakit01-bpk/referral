@@ -80,12 +80,73 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Handle delete button clicks
+    document.body.addEventListener('click', async function(event) {
+        if (event.target.closest('.delete-button')) {
+            const button = event.target.closest('.delete-button');
+            const id = button.dataset.id;
+            const nationalId = button.dataset.nationalId;
+            
+            // Show confirmation dialog
+            const result = await Swal.fire({
+                title: 'ยืนยันการยกเลิก',
+                text: 'คุณต้องการยกเลิกการส่งตัวนี้ใช่หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch('../action_dashboard/cancel_transfer.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id: id,
+                            nationalId: nationalId,
+                            status: 'ยกเลิก' // เพิ่มสถานะยกเลิก
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // ลบแถวออกจากตาราง
+                        button.closest('tr').remove();
+                        
+                        Swal.fire({
+                            title: 'ยกเลิกแล้ว',
+                            text: 'การส่งตัวถูกยกเลิกเรียบร้อยแล้ว',
+                            icon: 'success',
+                            confirmButtonText: 'ตกลง'
+                        }).then(() => {
+                            // รีโหลดหน้าเพื่อแสดงข้อมูลล่าสุด
+                            location.reload();
+                        });
+                    } else {
+                        throw new Error(data.error || 'ไม่สามารถยกเลิกการส่งตัวได้');
+                    }
+                } catch (error) {
+                    Swal.fire(
+                        'เกิดข้อผิดพลาด',
+                        error.message,
+                        'error'
+                    );
+                }
+            }
+        }
+    });
+
     // Handle form submission
     transferForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
         const formData = {
-            id: this.dataset.editId,
             nationalId: document.getElementById('national-id-popup').value,
             fullName: document.getElementById('full-name-popup').value,
             hospital_tf: document.getElementById('hospital-popup').value,
@@ -102,8 +163,19 @@ document.addEventListener('DOMContentLoaded', function() {
             approved_hospital: document.getElementById('approved-hospital-popup').value
         };
 
+        // เพิ่ม ID เฉพาะเมื่อเป็นการแก้ไข
+        if (this.dataset.editId) {
+            formData.id = this.dataset.editId;
+        }
+
         try {
-            const response = await fetch('../action_dashboard/update_transfer.php', {
+            const endpoint = this.dataset.editId ? 
+                '../action_dashboard/update_transfer.php' : 
+                '../action_dashboard/save_transfer.php';
+
+            console.log('Sending data:', formData); // Debug log
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -112,20 +184,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             const result = await response.json();
+            console.log('Response:', result); // Debug log
+
             if (result.success) {
-                // Show success message
                 Swal.fire({
                     title: 'สำเร็จ',
-                    text: 'อัพเดทข้อมูลเรียบร้อยแล้ว',
+                    text: this.dataset.editId ? 'อัพเดทข้อมูลเรียบร้อยแล้ว' : 'บันทึกข้อมูลเรียบร้อยแล้ว',
                     icon: 'success',
                     confirmButtonText: 'ตกลง'
                 }).then(() => {
-                    location.reload(); // Reload page to show updated data
+                    location.reload();
                 });
             } else {
-                throw new Error(result.error || 'เกิดข้อผิดพลาดในการอัพเดทข้อมูล');
+                throw new Error(result.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
             }
         } catch (error) {
+            console.error('Error:', error); // Debug log
             Swal.fire({
                 title: 'ผิดพลาด',
                 text: error.message,
@@ -134,7 +208,124 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Fill form when editing
+    function fillFormWithData(data) {
+        // Set the edit mode flag
+        transferForm.dataset.editId = data.id;
+        
+        // ...existing fillFormWithData code...
+    }
+
+    // เพิ่ม event listener สำหรับปุ่มค้นหา
+    const searchButton = document.getElementById('search-button');
+    if (searchButton) {
+        searchButton.addEventListener('click', performSearch);
+    }
+
+    // เพิ่ม event listener สำหรับการกด Enter ในช่องค้นหา
+    const searchInputs = [
+        'national-id',
+        'full-name',
+        'hospitalTF',
+        'status',
+        'start-date',
+        'end-date'
+    ].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+        }
+    });
+
+    // เพิ่มการจัดการปุ่ม reset
+    const cancelButton = document.getElementById('cancel-button');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', function() {
+            // ล้างค่าในฟอร์มค้นหา
+            document.getElementById('national-id').value = '';
+            document.getElementById('full-name').value = '';
+            document.getElementById('hospitalTF').selectedIndex = 0;
+            document.getElementById('status').selectedIndex = 0;
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            
+            // redirect ไปยังหน้าเดิมโดยไม่มีพารามิเตอร์การค้นหา
+            window.location.href = window.location.pathname;
+        });
+    }
+
+    // Add pagination handling
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    
+    if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = parseInt(urlParams.get('page')) || 1;
+            if (currentPage > 1) {
+                urlParams.set('page', currentPage - 1);
+                window.location.search = urlParams.toString();
+            }
+        });
+
+        nextBtn.addEventListener('click', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = parseInt(urlParams.get('page')) || 1;
+            const totalPages = parseInt(this.dataset.totalPages);
+            if (currentPage < totalPages) {
+                urlParams.set('page', currentPage + 1);
+                window.location.search = urlParams.toString();
+            }
+        });
+    }
+    
+    // Update performSearch function to maintain pagination
+    window.performSearch = function() {
+        const searchCriteria = {
+            nationalId: document.getElementById('national-id').value.trim(),
+            fullName: document.getElementById('full-name').value.trim(),
+            hospitalTF: document.getElementById('hospitalTF').value,
+            status: document.getElementById('status').value,
+            startDate: document.getElementById('start-date').value,
+            endDate: document.getElementById('end-date').value,
+            approvedDateLimit: 7 // เพิ่มค่าจำนวนวันสำหรับการกรอง
+        };
+
+        const queryString = encodeURIComponent(JSON.stringify(searchCriteria));
+        
+        // Reset to page 1 when searching
+        const urlParams = new URLSearchParams();
+        urlParams.set('search', queryString);
+        urlParams.set('page', '1');
+        
+        window.location.search = urlParams.toString();
+    };
 });
+
+// เพิ่มฟังก์ชัน search ใหม่
+function performSearch() {
+    const searchCriteria = {
+        nationalId: document.getElementById('national-id').value.trim(),
+        fullName: document.getElementById('full-name').value.trim(),
+        hospitalTF: document.getElementById('hospitalTF').value,
+        status: document.getElementById('status').value,
+        startDate: document.getElementById('start-date').value,
+        endDate: document.getElementById('end-date').value
+    };
+
+    // สร้าง URL สำหรับการค้นหา
+    const queryString = encodeURIComponent(JSON.stringify(searchCriteria));
+    const url = window.location.pathname + '?search=' + queryString;
+
+    // ทำการ reload หน้าพร้อมพารามิเตอร์การค้นหา
+    window.location.href = url;
+}
 
 // ฟังก์ชันสำหรับปิด modal
 function closeModal() {
@@ -156,4 +347,24 @@ function saveChanges() {
     
     // ปิด modal
     closeModal();
+}
+
+// แก้ไขฟังก์ชัน isMatch เพื่อตรวจสอบเงื่อนไขเพิ่มเติม
+function isMatch(rowData, criteria) {
+    if (!rowData || !criteria) return true;
+
+    // เพิ่มการตรวจสอบสถานะและวันที่อนุมัติ
+    if (rowData.status === 'อนุมัติ') {
+        const approvedDate = new Date(rowData.approvedDate);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        if (approvedDate < sevenDaysAgo) {
+            return false;
+        }
+    }
+
+    // ...existing matching conditions...
+
+    return true;
 }

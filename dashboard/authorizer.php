@@ -62,11 +62,25 @@ if ($username) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transfer</title>
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="dashboard_F.css">
+
     <link rel="shortcut icon" type="image/x-icon" href="http://192.168.13.31/seedhelpdesk/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui/material-ui.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <style>
+    .logout-button {
+            margin-left: auto; /* Push to right side */
+            background-color: #dc3545;
+        }
+        
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+        
+        .fa-sign-out-alt {
+        }
+</style>
 </head>
 
 <body>
@@ -76,7 +90,10 @@ if ($username) {
         <a href="authorizer"><img src="../Assets/logo_bpk_group.png" alt="" width="160" height="50"></a>
         <div class="user-info">
             <h1>สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?></h1>
-            
+            <a href="history.php" class="nav-button">ดูประวัติ</a>
+            <a href="../action_dashboard/logout.php" class="nav-button logout-button">
+            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+        </a>
         </div>
     </div>
     <div class="container">
@@ -114,7 +131,7 @@ if ($username) {
                     <label for="status">สถานะการส่งตัว:</label>
                     <select id="status">
                         <option value="" disabled selected>กรุณาเลือกสถานะ</option>
-                        <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
+                        <option value="อนุมัติ">อนุมัติ</option>
                         <option value="รอการอนุมัติ">รอการอนุมัติ</option>
                     </select>
                 </div>
@@ -263,19 +280,119 @@ if ($username) {
                         <th>ดูใบส่งตัว</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="table-body">
                 <?php 
                     try {
-                        // แก้ไขคำสั่ง SQL เพื่อป้องกันการซ้ำซ้อน
-                        $result = $db->query(
-                            "SELECT DISTINCT ON (tf.id) tf.*, u.fullname as user_fullname 
-                             FROM transfer_form tf 
-                             LEFT JOIN users u ON u.hospital = tf.approved_hospital 
-                             WHERE tf.approved_hospital = $1 
-                             
-                             ORDER BY tf.id, tf.transfer_date DESC",
-                            array($hospital)
-                        );
+                        // Calculate pagination
+                        $rows_per_page = 5;
+                        $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                        $offset = ($current_page - 1) * $rows_per_page;
+
+                        // First, get total count for pagination
+                        $count_sql = "SELECT COUNT(*) FROM transfer_form tf 
+                                      WHERE tf.approved_hospital = $1 
+                                      AND tf.status != 'ยกเลิก'
+                                      AND (
+                                        tf.status != 'อนุมัติ' 
+                                        OR (
+                                            tf.status = 'อนุมัติ' 
+                                            AND CASE 
+                                                WHEN tf.approved_date IS NOT NULL 
+                                                THEN CAST(tf.approved_date AS DATE) >= CURRENT_DATE - INTERVAL '7 days'
+                                                ELSE true
+                                            END
+                                        )
+                                      )";
+                        $count_params = array($hospital);
+                        
+                        // Add search conditions to count query if search parameters exist
+                        if (isset($_GET['search'])) {
+                            $searchCriteria = json_decode($_GET['search'], true);
+                            
+                            if (!empty($searchCriteria['nationalId'])) {
+                                $count_sql .= " AND tf.national_id LIKE $" . (count($count_params) + 1);
+                                $count_params[] = '%' . $searchCriteria['nationalId'] . '%';
+                            }
+                            
+                            if (!empty($searchCriteria['fullName'])) {
+                                $count_sql .= " AND LOWER(tf.full_name_tf) LIKE $" . (count($count_params) + 1);
+                                $count_params[] = '%' . strtolower($searchCriteria['fullName']) . '%';
+                            }
+                            
+                            if (!empty($searchCriteria['hospitalTF'])) {
+                                $count_sql .= " AND tf.hospital_tf = $" . (count($count_params) + 1);
+                                $count_params[] = $searchCriteria['hospitalTF'];
+                            }
+
+                            if (!empty($searchCriteria['status'])) {
+                                $count_sql .= " AND tf.status = $" . (count($count_params) + 1);
+                                $count_params[] = $searchCriteria['status'];
+                            }
+                            
+                            if (!empty($searchCriteria['startDate']) && !empty($searchCriteria['endDate'])) {
+                                $count_sql .= " AND tf.transfer_date BETWEEN $" . (count($count_params) + 1) . " AND $" . (count($count_params) + 2);
+                                $count_params[] = $searchCriteria['startDate'];
+                                $count_params[] = $searchCriteria['endDate'];
+                            }
+                        }
+                        
+                        $count_result = $db->query($count_sql, $count_params);
+                        $total_rows = pg_fetch_result($count_result, 0, 0);
+                        $total_pages = ceil($total_rows / $rows_per_page);
+
+                        // Then, get data with pagination
+                        $sql = "SELECT DISTINCT ON (tf.id) tf.*, u.fullname as user_fullname 
+                                FROM transfer_form tf 
+                                LEFT JOIN users u ON u.hospital = tf.approved_hospital 
+                                WHERE tf.approved_hospital = $1 
+                                AND tf.status != 'ยกเลิก'
+                                AND (
+                                    tf.status != 'อนุมัติ' 
+                                    OR (
+                                        tf.status = 'อนุมัติ' 
+                                        AND CASE 
+                                            WHEN tf.approved_date IS NOT NULL 
+                                            THEN CAST(tf.approved_date AS DATE) >= CURRENT_DATE - INTERVAL '7 days'
+                                            ELSE true
+                                        END
+                                    )
+                                )";
+                        $params = array($hospital);
+
+                        // Add search conditions if they exist
+                        if (isset($_GET['search'])) {
+                            if (!empty($searchCriteria['nationalId'])) {
+                                $sql .= " AND tf.national_id LIKE $" . (count($params) + 1);
+                                $params[] = '%' . $searchCriteria['nationalId'] . '%';
+                            }
+                            
+                            if (!empty($searchCriteria['fullName'])) {
+                                $sql .= " AND LOWER(tf.full_name_tf) LIKE $" . (count($params) + 1);
+                                $params[] = '%' . strtolower($searchCriteria['fullName']) . '%';
+                            }
+                            
+                            if (!empty($searchCriteria['hospitalTF'])) {
+                                $sql .= " AND tf.hospital_tf = $" . (count($params) + 1);
+                                $params[] = $searchCriteria['hospitalTF'];
+                            }
+
+                            if (!empty($searchCriteria['status'])) {
+                                $sql .= " AND tf.status = $" . (count($params) + 1);
+                                $params[] = $searchCriteria['status'];
+                            }
+                            
+                            if (!empty($searchCriteria['startDate']) && !empty($searchCriteria['endDate'])) {
+                                $sql .= " AND tf.transfer_date BETWEEN $" . (count($params) + 1) . " AND $" . (count($params) + 2);
+                                $params[] = $searchCriteria['startDate'];
+                                $params[] = $searchCriteria['endDate'];
+                            }
+                        }
+
+                        // Add pagination
+                        $sql .= " ORDER BY tf.id, tf.transfer_date DESC
+                                  LIMIT $rows_per_page OFFSET $offset";
+
+                        $result = $db->query($sql, $params);
                         
                         if ($result) {
                             while ($row = pg_fetch_assoc($result)) {
@@ -306,11 +423,14 @@ if ($username) {
                                         >
                                             <i class='fas fa-edit'></i> แก้ไข
                                         </button>
-                                        <button class='delete-button' data-id='" . htmlspecialchars($row['id']) . "'>
+                                        <button class='delete-button' 
+                                            data-id='" . htmlspecialchars($row['id']) . "'
+                                            data-national-id='" . htmlspecialchars($row['national_id']) . "'
+                                        >
                                             <i class='fas fa-trash-alt'></i> ยกเลิก
                                         </button>
                                       </td>";
-                                echo "<td><a href='../form.php?id=" . htmlspecialchars($row['id']) . "'><i class='fas fa-eye view-icon'></i></a></td>";
+                                echo "<td><a href='../form2.php?id=" . htmlspecialchars($row['id']) . "'><i class='fas fa-eye view-icon'></i></a></td>";
                                 echo "</tr>";
                             }
                         }
@@ -320,10 +440,20 @@ if ($username) {
                 ?>
                 </tbody>
             </table>
+
+            <!-- Pagination controls -->
             <div class="pagination">
-                <button id="prev-page">« Prev</button>
-                <span id="page-info"></span>
-                <button id="next-page">Next »</button>
+                <button id="prev-page" class="page-btn" onclick="changePage(<?php echo $current_page - 1; ?>)" 
+                        <?php echo ($current_page <= 1) ? 'disabled' : ''; ?>>
+                    « Previous
+                </button>
+                <span class="page-info">
+                    Page <?php echo $current_page; ?> of <?php echo $total_pages; ?>
+                </span>
+                <button id="next-page" class="page-btn" onclick="changePage(<?php echo $current_page + 1; ?>)"
+                        <?php echo ($current_page >= $total_pages) ? 'disabled' : ''; ?>>
+                    Next »
+                </button>
             </div>
         </div>
     </div>
@@ -338,8 +468,9 @@ if ($username) {
 </div>
 
 <script src="authorizer.js"></script>
-    <script>// srcipt ปุ่ม next , prev
-        document.addEventListener('DOMContentLoaded', function () {
+<script>
+        // srcipt ปุ่ม next , prev
+        document.addEventListener('DOMContentLoaded', function() {
             const rowsPerPage = 10; // กำหนดจำนวนข้อมูลต่อหน้า
             let currentPage = 1;
 
@@ -370,14 +501,14 @@ if ($username) {
             }
 
             // Add event listeners to the pagination buttons
-            prevPageButton.addEventListener('click', function () {
+            prevPageButton.addEventListener('click', function() {
                 if (currentPage > 1) {
                     currentPage--;
                     displayRows();
                 }
             });
 
-            nextPageButton.addEventListener('click', function () {
+            nextPageButton.addEventListener('click', function() {
                 if (currentPage < totalPages) {
                     currentPage++;
                     displayRows();
@@ -393,6 +524,7 @@ if ($username) {
         document.addEventListener('DOMContentLoaded', function () {
             const cancelButton = document.getElementById('cancel-button');
             const searchButton = document.getElementById('search-button');
+            const searchForm = document.querySelector('.form-container');
             const nationalIdInput = document.getElementById('national-id');
             const fullNameInput = document.getElementById('full-name');
             const hospitalSelect = document.getElementById('hospitalTF');
@@ -401,61 +533,114 @@ if ($username) {
             const tableBody = document.getElementById('table-body');
             const status = document.getElementById('status');
 
-            // ระบบยกเลิก
-            cancelButton.addEventListener('click', function () {
+            // ฟังก์ชันสำหรับรีเซ็ตการค้นหา
+            function resetSearch() {
                 nationalIdInput.value = '';
                 fullNameInput.value = '';
-                hospitalSelect.selectedIndex = 0; // Reset to the default option
+                hospitalSelect.selectedIndex = 0;
                 startDateInput.value = '';
                 endDateInput.value = '';
                 status.selectedIndex = 0;
-                const rows = tableBody.querySelectorAll('tr');
+                fetchData(); // รีโหลดข้อมูลทั้งหมด
+            }
 
-                rows.forEach(row => row.style.display = 'table-row'); // แสดงผลทั้งหมด
-            });
+            // s
+            function performSearch(event) {
+                // ป้องกันการ submit form
+                if (event) {
+                    event.preventDefault();
+                }
 
-            // ระบบค้นหา
-            // ระบบค้นหา
-            searchButton.addEventListener('click', function () {
-                const nationalId = nationalIdInput.value.trim();
-                const fulltName = fullNameInput.value.trim().toLowerCase();
-                const hospitalTF = hospitalSelect.value; // Get the selected hospital
-                const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
-                const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
-                const selectedStatus = status.value; // <-- ใช้ status ที่ถูกต้อง
+                const searchCriteria = {
+                    nationalId: nationalIdInput.value.trim(),
+                    fullName: fullNameInput.value.trim().toLowerCase(),
+                    hospitalTF: hospitalSelect.value,
+                    status: status.value,
+                    startDate: startDateInput.value ? new Date(startDateInput.value) : null,
+                    endDate: endDateInput.value ? new Date(endDateInput.value) : null
+                };
+
+                if (searchCriteria.startDate) {
+                    searchCriteria.startDate.setHours(0, 0, 0, 0);
+                }
+                if (searchCriteria.endDate) {
+                    searchCriteria.endDate.setHours(23, 59, 59, 999);
+                }
 
                 const rows = tableBody.querySelectorAll('tr');
                 rows.forEach(row => {
-                    const columns = row.querySelectorAll('td');
-                    const nationalIdRow = columns[0].textContent;
-                    const fullName = columns[1].textContent.toLowerCase();
-                    const hospital = columns[2].textContent.trim(); // ใช้ trim() เพื่อลบช่องว่าง
-                    const transferDate = new Date(columns[3].textContent); // คอลัมน์ 3 เป็นวันที่ส่งตัว
-                    const statusRow = columns[4].textContent; // <-- ตรวจสอบสถานะจากคอลัมน์นี้
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length === 0) return;
 
-                    let match = true;
+                    try {
+                        const rowData = {
+                            nationalId: cells[0].textContent.trim(),
+                            fullName: cells[1].textContent.trim().toLowerCase(),
+                            hospital_tf: cells[2].textContent.trim(),
+                            date: parseDate(cells[3].textContent.trim()),
+                            status: cells[4].textContent.trim()
+                        };
 
-                    // ตรวจสอบเลขประจำตัวประชาชน
-                    if (nationalId && !nationalIdRow.includes(nationalId)) match = false;
+                        const matches = isMatch(rowData, searchCriteria);
+                        row.style.display = matches ? 'table-row' : 'none';
+                    } catch (error) {
+                        console.error('Error processing row:', error);
+                    }
+                });
+            }
 
-                    // ตรวจสอบชื่อ
-                    if (fulltName && !fullName.includes(fulltName)) match = false;
+            // Event Listeners
+            cancelButton.addEventListener('click', resetSearch);
+            searchButton.addEventListener('click', performSearch);
 
-                    // ตรวจสอบโรงพยาบาล
-                    if (hospitalTF && hospital !== hospitalTF) match = false; // ใช้ตรง ๆ แทน includes
+            // เพิ่ม Form Submit Event
+            searchForm.addEventListener('submit', performSearch);
 
-                    // ตรวจสอบวันที่เริ่มต้นและสิ้นสุด
-                    if (startDate && transferDate < startDate) match = false;
-                    if (endDate && transferDate > endDate) match = false;
-
-                    // ตรวจสอบสถานะการส่งตัว
-                    if (selectedStatus && selectedStatus !== statusRow) match = false; // <-- ตรวจสอบสถานะที่เลือก
-
-                    row.style.display = match ? 'table-row' : 'none'; // แสดงหรือซ่อนแถว
+            // เพิ่ม Enter key event สำหรับช่อง input
+            [nationalIdInput, fullNameInput].forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        performSearch();
+                    }
                 });
             });
 
+            // Helper functions
+            function parseDate(dateStr) {
+                try {
+                    const [month, day, year] = dateStr.split('/').map(num => parseInt(num, 10));
+                    const date = new Date(year, month - 1, day);
+                    if (isNaN(date.getTime())) {
+                        throw new Error('Invalid date');
+                    }
+                    return date;
+                } catch (error) {
+                    console.error('Error parsing date:', dateStr, error);
+                    return new Date(0); // Return epoch date as fallback
+                }
+            }
+
+            function isMatch(rowData, criteria) {
+                if (!rowData || !criteria) return true;
+
+                if (criteria.nationalId && !rowData.nationalId.includes(criteria.nationalId)) return false;
+                if (criteria.fullName && !rowData.fullName.includes(criteria.fullName)) return false;
+                if (criteria.hospital_tf && rowData.hospital_tf !== criteria.hospital_tf) return false;
+                if (criteria.status && rowData.status !== criteria.status) return false;
+
+                if (criteria.startDate && criteria.endDate) {
+                    return rowData.date >= criteria.startDate && rowData.date <= criteria.endDate;
+                } else if (criteria.startDate) {
+                    return rowData.date >= criteria.startDate;
+                } else if (criteria.endDate) {
+                    return rowData.date <= criteria.endDate;
+                }
+
+                return true;
+            }
         });
+        
     </script>
 
     <script> // เช็คเลขบัตรประชาชน
@@ -524,6 +709,7 @@ if ($username) {
             transferForm.addEventListener('submit', function (event) {
                 event.preventDefault();
 
+            
                 // ดึงค่าจากฟอร์ม
                 const nationalId = document.getElementById('national-id-popup').value.trim();
                 const fullName = document.getElementById('full-name-popup').value.trim();
@@ -534,7 +720,7 @@ if ($username) {
                 const phone = document.getElementById('phone-popup').value.trim();
                 const age = document.getElementById('age-popup').value.trim();
                 const ap_hospital = document.getElementById('approved-hospital-popup').value.trim();
-
+               
                 const diagnosis = document.getElementById('diagnosis-popup').value.trim();
                 const reason = document.getElementById('reason-popup').value.trim();
                 const status = "รอการอนุมัติ"; // Set status to "รอการอนุมัติ"
@@ -665,7 +851,6 @@ if ($username) {
                     document.getElementById('phone-popup').value = button.dataset.phone;
                     document.getElementById('age-popup').value = button.dataset.age;
                     document.getElementById('approved-hospital-popup').value = button.dataset.approvedHospital;
-
                     document.getElementById('diagnosis-popup').value = button.dataset.diagnosis;
                     document.getElementById('reason-popup').value = button.dataset.reason;
 
@@ -680,7 +865,48 @@ if ($username) {
             });
         });
     </script>
+     <!-- เพิ่มต่อจาก script ที่มีอยู่ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // จัดการกับช่องกรอกชื่อบริษัทประกัน
+            const insuranceCheckbox = document.getElementById('bill-insurance');
+            const insuranceInput = document.getElementById('insurance-name');
+
+            // เพิ่ม CSS inline สำหรับช่องกรอกชื่อบริษัทประกัน
+            insuranceInput.style.marginTop = '5px';
+            insuranceInput.style.width = '100%';
+            insuranceInput.style.padding = '8px';
+            insuranceInput.style.boxSizing = 'border-box';
+
+            insuranceCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    insuranceInput.style.display = 'block';
+                    insuranceInput.required = true;
+                } else {
+                    insuranceInput.style.display = 'none';
+                    insuranceInput.required = false;
+                    insuranceInput.value = ''; // ล้างค่าเมื่อยกเลิกการติ๊ก
+                }
+            });
+
+            // เพิ่มการตรวจสอบในฟอร์มก่อนส่ง
+            const transferForm = document.getElementById('transfer-form');
+            transferForm.addEventListener('submit', function(event) {
+                if (insuranceCheckbox.checked && !insuranceInput.value.trim()) {
+                    event.preventDefault();
+                    alert('กรุณาระบุชื่อบริษัทประกัน');
+                }
+            });
+        });
+    </script>
     <script src="your-javascript-file.js"></script>
+    <script>
+        function changePage(page) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', page);
+            window.location.search = urlParams.toString();
+        }
+    </script>
 </body>
 
 </html>

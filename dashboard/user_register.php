@@ -6,7 +6,7 @@ if ($_SESSION['role'] !== 'register') {
 }
 
 // Get fullname from session
-$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน'; 
+$fullname = $_SESSION['fullname'] ?? 'ผู้ใช้งาน';
 $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไป';
 
 ?>
@@ -23,6 +23,9 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
         href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Prompt:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui/material-ui.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Add sliding animation styles */
         .popup-form {
@@ -35,6 +38,71 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             transform: translateY(0);
             opacity: 1;
         }
+
+        .refresh {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .refresh:hover {
+            background-color: #45a049;
+        }
+
+        .fa-sync-alt {
+            transition: transform 0.3s ease;
+        }
+
+        .refresh:hover .fa-sync-alt {
+            transform: rotate(180deg);
+        }
+
+
+
+        .logout-button {
+            margin-left: auto;
+            /* Push to right side */
+            background-color: #dc3545;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+
+        .fa-sign-out-alt {
+            margin-right: 5px;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px 20px;
+        }
+
+        .nav-buttons {
+            margin-left: auto;
+            /* This pushes the div to the right */
+            display: flex;
+            gap: 10px;
+            /* Adds space between buttons */
+            align-items: center;
+        }
+
+        .nav-button {
+            /* Your existing nav-button styles */
+        }
+
+        .logout-button {
+            /* Remove margin-left: auto from here if it exists */
+            background-color: #dc3545;
+        }
     </style>
 </head>
 
@@ -42,9 +110,15 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
     <div class="navbar">
         <a href="user_register.php"><img src="../assets/logo_bpk_group.png" alt="" width="160" height="40"></a>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?> จาก
-         <?php echo htmlspecialchars($hospital); ?>
-        <a href="history.php" class="nav-button">ดูประวัติ </a>
+        <?php echo htmlspecialchars($hospital); ?>
+        <div class="nav-buttons">
+            <a href="history.php" class="nav-button">ดูประวัติ</a>
+            <a href="../action_dashboard/logout.php" class="nav-button logout-button">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
     </div>
+
     <div class="container">
         <div class="form-container">
             <h3>ค้นหาข้อมูลผู้ป่วย</h3>
@@ -71,23 +145,30 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                     <label for="hospital_tf">ส่งตัวไปที่โรงพยาบาล:</label>
                     <select id="hospital_tf">
                         <option value="" disabled selected>กรุณาเลือกโรงพยาบาล</option>
-                        <option value="โรงพยาบาลบางปะกอก 9">โรงพยาบาลบางปะกอก 9</option>
-                        <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                        <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
                         <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
+                        <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
+                        <option value="โรงพยาบาลบางปะกอก 8">โรงพยาบาลบางปะกอก 8</option>
+                        <option value="โรงพยาบาลบางปะกอก 2 รังสิต">โรงพยาบาลบางปะกอก 2 รังสิต</option>
+                        <option value="โรงพยาบาลบางปะกอกสมุทรปราการ">โรงพยาบาลบางปะกอกสมุทรปราการ</option>
+                        <option value="โรงพยาบาลปิยะเวท">โรงพยาบาลปิยะเวท</option>
+                        <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
                     </select>
                 </div>
                 <div>
                     <label for="status">สถานะการส่งตัว:</label>
                     <select id="status">
                         <option value="" disabled selected>กรุณาเลือกสถานะ</option>
-                        <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
+                        <option value="อนุมัติ">อนุมัติ</option>
                         <option value="รอการอนุมัติ">รอการอนุมัติ</option>
                     </select>
                 </div>
             </div>
             <div class="form-actions">
                 <button id="search-button" type="button">Search</button>
-                <button id="cancel-button" class="cancel" type="button">ยกเลิก</button>
+                <button id="refresh-button" class="refresh" type="button">
+                    <i class="fas fa-sync-alt"></i> รีเฟรช
+                </button>
             </div>
         </div>
 
@@ -192,15 +273,15 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                 </div>
                             </div>
                             <label for="approved-hospital">โรงพยาบาลที่อนุมัติ</label>
-                            <select id="approved-hospital" required>
-                                <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล">โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
-                                <option value="โรงพยาบาลบางปะกอก 1">โรงพยาบาลบางปะกอก 1</option>
-                                <option value="โรงพยาบาลบางปะกอก 3">โรงพยาบาลบางปะกอก 3</option>
-                                <option value="โรงพยาบาลบางปะกอก 8">โรงพยาบาลบางปะกอก 8</option>
-                                <option value="โรงพยาบาลบางปะกอก 2 รังสิต">โรงพยาบาลบางปะกอก 2 รังสิต</option>
-                                <option value="โรงพยาบาลบางปะกอกสมุทรปราการ">โรงพยาบาลบางปะกอกสมุทรปราการ</option>
-                                <option value="โรงพยาบาลปิยะเวท">โรงพยาบาลปิยะเวท</option>
-                                <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
+                            <select id="approved-hospital" name="approved-hospital" required>
+                                <option value="โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล" <?php echo ($hospital === 'โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล</option>
+                                <option value="โรงพยาบาลบางปะกอก 1" <?php echo ($hospital === 'โรงพยาบาลบางปะกอก 1') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอก 1</option>
+                                <option value="โรงพยาบาลบางปะกอก 3" <?php echo ($hospital === 'โรงพยาบาลบางปะกอก 3') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอก 3</option>
+                                <option value="โรงพยาบาลบางปะกอก 8" <?php echo ($hospital === 'โรงพยาบาลบางปะกอก 8') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอก 8</option>
+                                <option value="โรงพยาบาลบางปะกอก 2 รังสิต" <?php echo ($hospital === 'โรงพยาบาลบางปะกอก 2 รังสิต') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอก 2 รังสิต</option>
+                                <option value="โรงพยาบาลบางปะกอกสมุทรปราการ" <?php echo ($hospital === 'โรงพยาบาลบางปะกอกสมุทรปราการ') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอกสมุทรปราการ</option>
+                                <option value="โรงพยาบาลปิยะเวท" <?php echo ($hospital === 'โรงพยาบาลปิยะเวท') ? 'selected' : ''; ?>>โรงพยาบาลปิยะเวท</option>
+                                <option value="โรงพยาบาลบางปะกอกอายุรเวช" <?php echo ($hospital === 'โรงพยาบาลบางปะกอกอายุรเวช') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอกอายุรเวช</option>
                             </select>
 
                             <label for="diagnosis-popup">การวินิจฉัยโรค</label>
@@ -210,7 +291,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             <input id="reason-popup" placeholder="กรุณาป้อนเหตุผลในการส่งตัว" type="text">
 
                             <button type="submit">บันทึก</button>
-                        </form>>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -297,82 +378,73 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
     <script>
         //script ปุ่ม search
         document.addEventListener('DOMContentLoaded', function() {
-            const cancelButton = document.getElementById('cancel-button');
             const searchButton = document.getElementById('search-button');
+            const refreshButton = document.getElementById('refresh-button');
             const searchForm = document.querySelector('.form-container');
-            const nationalIdInput = document.getElementById('national-id');
-            const fullNameInput = document.getElementById('full-name');
-            const hospital_tfSelect = document.getElementById('hospital_tf');
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
-            const tableBody = document.getElementById('table-body');
-            const status = document.getElementById('status');
+            const inputs = {
+                nationalId: document.getElementById('national-id'),
+                fullName: document.getElementById('full-name'),
+                hospital_tf: document.getElementById('hospital_tf'),
+                startDate: document.getElementById('start-date'),
+                endDate: document.getElementById('end-date'),
+                status: document.getElementById('status')
+            };
 
-            // ฟังก์ชันสำหรับรีเซ็ตการค้นหา
-            function resetSearch() {
-                nationalIdInput.value = '';
-                fullNameInput.value = '';
-                hospital_tfSelect.selectedIndex = 0;
-                startDateInput.value = '';
-                endDateInput.value = '';
-                status.selectedIndex = 0;
-                fetchData(); // รีโหลดข้อมูลทั้งหมด
+            // ฟังก์ชันรีเฟรชข้อมูล
+            function refreshData() {
+                // เพิ่มเอฟเฟกต์การหมุนไอคอน
+                const icon = refreshButton.querySelector('.fa-sync-alt');
+                icon.style.transform = 'rotate(360deg)';
+
+                // รีเซ็ตฟอร์ม
+                Object.values(inputs).forEach(input => {
+                    if (input.type === 'select-one') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                });
+
+                // รีเซ็ตตัวแปรค้นหา
+                window.currentSearchCriteria = null;
+
+                // โหลดข้อมูลใหม่
+                fetchData(1);
+
+                // รีเซ็ตการหมุนไอคอนหลังจาก animation เสร็จสิ้น
+                setTimeout(() => {
+                    icon.style.transform = '';
+                }, 300);
             }
 
-            // s
+            // ฟังก์ชันค้นหา
             function performSearch(event) {
-                // ป้องกันการ submit form
                 if (event) {
                     event.preventDefault();
                 }
 
                 const searchCriteria = {
-                    nationalId: nationalIdInput.value.trim(),
-                    fullName: fullNameInput.value.trim().toLowerCase(),
-                    hospital_tf: hospital_tfSelect.value,
-                    status: status.value,
-                    startDate: startDateInput.value ? new Date(startDateInput.value) : null,
-                    endDate: endDateInput.value ? new Date(endDateInput.value) : null
+                    nationalId: inputs.nationalId.value.trim(),
+                    fullName: inputs.fullName.value.trim(),
+                    hospital_tf: inputs.hospital_tf.value,
+                    status: inputs.status.value,
+                    startDate: inputs.startDate.value,
+                    endDate: inputs.endDate.value
                 };
 
-                if (searchCriteria.startDate) {
-                    searchCriteria.startDate.setHours(0, 0, 0, 0);
-                }
-                if (searchCriteria.endDate) {
-                    searchCriteria.endDate.setHours(23, 59, 59, 999);
-                }
+                // เก็บค่าการค้นหาไว้
+                window.currentSearchCriteria = searchCriteria;
 
-                const rows = tableBody.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length === 0) return;
-
-                    try {
-                        const rowData = {
-                            nationalId: cells[0].textContent.trim(),
-                            fullName: cells[1].textContent.trim().toLowerCase(),
-                            hospital_tf: cells[2].textContent.trim(),
-                            date: parseDate(cells[3].textContent.trim()),
-                            status: cells[4].textContent.trim()
-                        };
-
-                        const matches = isMatch(rowData, searchCriteria);
-                        row.style.display = matches ? 'table-row' : 'none';
-                    } catch (error) {
-                        console.error('Error processing row:', error);
-                    }
-                });
+                // ส่งคำค้นหาไปยัง API
+                fetchData(1);
             }
 
             // Event Listeners
-            cancelButton.addEventListener('click', resetSearch);
+            refreshButton.addEventListener('click', refreshData);
             searchButton.addEventListener('click', performSearch);
 
-            // เพิ่ม Form Submit Event
-            searchForm.addEventListener('submit', performSearch);
-
-            // เพิ่ม Enter key event สำหรับช่อง input
-            [nationalIdInput, fullNameInput].forEach(input => {
+            // เพิ่ม Event Listener สำหรับ Enter key ในช่องค้นหา
+            Object.values(inputs).forEach(input => {
                 input.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -381,41 +453,9 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                 });
             });
 
-            // Helper functions
-            function parseDate(dateStr) {
-                try {
-                    const [month, day, year] = dateStr.split('/').map(num => parseInt(num, 10));
-                    const date = new Date(year, month - 1, day);
-                    if (isNaN(date.getTime())) {
-                        throw new Error('Invalid date');
-                    }
-                    return date;
-                } catch (error) {
-                    console.error('Error parsing date:', dateStr, error);
-                    return new Date(0); // Return epoch date as fallback
-                }
-            }
-
-            function isMatch(rowData, criteria) {
-                if (!rowData || !criteria) return true;
-
-                if (criteria.nationalId && !rowData.nationalId.includes(criteria.nationalId)) return false;
-                if (criteria.fullName && !rowData.fullName.includes(criteria.fullName)) return false;
-                if (criteria.hospital_tf && rowData.hospital_tf !== criteria.hospital_tf) return false;
-                if (criteria.status && rowData.status !== criteria.status) return false;
-
-                if (criteria.startDate && criteria.endDate) {
-                    return rowData.date >= criteria.startDate && rowData.date <= criteria.endDate;
-                } else if (criteria.startDate) {
-                    return rowData.date >= criteria.startDate;
-                } else if (criteria.endDate) {
-                    return rowData.date <= criteria.endDate;
-                }
-
-                return true;
-            }
+            // Initial load
+            fetchData(1);
         });
-        
     </script>
 
     <script>
@@ -456,8 +496,20 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             window.popupForm = popupForm;
 
             // Define fetchData function in the global scope
-            window.fetchData = function() {
-                fetch('../action_dashboard/fetch_transfers.php')
+            window.fetchData = function(page = 1) {
+                const queryParams = new URLSearchParams();
+                queryParams.set('page', page.toString());
+
+                // Add current search criteria if exists
+                if (window.currentSearchCriteria) {
+                    Object.entries(window.currentSearchCriteria).forEach(([key, value]) => {
+                        if (value) {
+                            queryParams.set(key, value);
+                        }
+                    });
+                }
+
+                fetch(`../action_dashboard/fetch_transfers1.php?${queryParams.toString()}`)
                     .then(response => response.json())
                     .then(result => {
                         if (!result.success) {
@@ -478,7 +530,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                 <button class="edit-button" onclick="editTransfer('${row.national_id}', ${row.id})">
                                     แก้ไข
                                 </button>
-                                <button class="cancel-button" onclick="cancelTransfer('${row.national_id}')">
+                                <button class="cancel-button" onclick="cancelTransfer('${row.national_id}', ${row.id})">
                                     ยกเลิก
                                 </button>
                             </td>
@@ -491,6 +543,18 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                         `;
                             tableBody.appendChild(newRow);
                         });
+
+                        // Update pagination info
+                        const pageInfo = document.getElementById('page-info');
+                        const prevButton = document.getElementById('prev-page');
+                        const nextButton = document.getElementById('next-page');
+
+                        pageInfo.textContent = `หน้า ${result.pagination.currentPage} จาก ${result.pagination.totalPages}`;
+                        prevButton.disabled = result.pagination.currentPage <= 1;
+                        nextButton.disabled = result.pagination.currentPage >= result.pagination.totalPages;
+
+                        // Store current page
+                        window.currentPage = result.pagination.currentPage;
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -521,7 +585,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             document.getElementById('national-id-popup').readOnly = true;
                             document.getElementById('full-name-popup').value = record.full_name_tf;
                             document.getElementById('hospital_tf-popup').value = record.hospital_tf;
-                            document.getElementById('approved-hospital').value = record.approved_hospital || ''; // Add this line
+                            document.getElementById('approved-hospital').value = record.approved_hospital || '<?php echo htmlspecialchars($hospital); ?>';
                             // Format date for display
                             const date = new Date(record.transfer_date);
                             const formattedDate = date.toISOString().split('T')[0]; // เก็บรูปแบบ YYYY-MM-DD สำหรับ input type="date"
@@ -543,12 +607,22 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             transferForm.setAttribute('data-mode', 'edit');
                         } else {
                             console.error('Failed to fetch record:', data.error);
-                            alert('ไม่สามารถดึงข้อมูลได้');
+                            Swal.fire({
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถดึงข้อมูลได้: ' + data.error,
+                                icon: 'error',
+                                confirmButtonText: 'ตกลง'
+                            });
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('เกิดข้อผิดพลาดในการดึงข้อมูล');
+                        Swal.fire({
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถดึงข้อมูลได้: ' + error.message,
+                            icon: 'error',
+                            confirmButtonText: 'ตกลง'
+                        });
                     });
             };
 
@@ -616,11 +690,16 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                     billing_type: billingTypes,
                     insurance_company: document.getElementById('insurance-name').value.trim(),
                     purpose: purposes,
-                    approved_hospital: document.getElementById('approved-hospital').value // Add this line
+                    approved_hospital: document.getElementById('approved-hospital').value // จะได้ค่าจาก session โดยอัตโนมัติ
                 };
 
                 if (!formData.nationalId || !formData.fullName || !formData.hospital_tf || !formData.transferDate) {
-                    alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+                    Swal.fire({
+                        title: 'ข้อมูลไม่ครบถ้วน',
+                        text: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน',
+                        icon: 'warning',
+                        confirmButtonText: 'ตกลง'
+                    });
                     return;
                 }
 
@@ -639,19 +718,25 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                         if (data.success) {
                             fetchData();
                             hidePopupForm();
-
-                            const toast = document.getElementById('toast');
-                            toast.style.display = 'block';
-                            setTimeout(() => {
-                                toast.style.display = 'none';
-                            }, 3000);
+                            Swal.fire({
+                                title: 'สำเร็จ',
+                                text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
                         } else {
                             throw new Error(data.error || 'Failed to save data');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
+                        Swal.fire({
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message,
+                            icon: 'error',
+                            confirmButtonText: 'ตกลง'
+                        });
                     });
             });
 
@@ -665,38 +750,67 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             }
 
             // เพิ่มฟังก์ชัน cancelTransfer
-            window.cancelTransfer = function(nationalId) {
-                if (confirm('คุณต้องการยกเลิกการส่งตัวนี้ใช่หรือไม่?')) {
-                    fetch('../action_dashboard/cancel_transfer.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                nationalId: nationalId
+            window.cancelTransfer = function(nationalId, id) {
+                Swal.fire({
+                    title: 'ยืนยันการยกเลิก',
+                    text: 'คุณต้องการยกเลิกการส่งตัวนี้ใช่หรือไม่?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'ยืนยัน',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('../action_dashboard/cancel_transfer.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    nationalId: nationalId,
+                                    id: id
+                                })
                             })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                fetchData(); // รีเฟรชตาราง
-                                const toast = document.getElementById('toast');
-                                toast.querySelector('.toast-title').textContent = 'ยกเลิกสำเร็จ';
-                                toast.querySelector('.toast-description').textContent = 'ยกเลิกการส่งตัวเรียบร้อยแล้ว';
-                                toast.style.display = 'block';
-                                setTimeout(() => {
-                                    toast.style.display = 'none';
-                                }, 3000);
-                            } else {
-                                throw new Error(data.error || 'Failed to cancel transfer');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('เกิดข้อผิดพลาดในการยกเลิก: ' + error.message);
-                        });
-                }
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    fetchData(); // รีเฟรชตาราง
+                                    Swal.fire({
+                                        title: 'สำเร็จ',
+                                        text: 'ยกเลิกการส่งตัวเรียบร้อยแล้ว',
+                                        icon: 'success',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    throw new Error(data.error || 'Failed to cancel transfer');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: 'ไม่สามารถยกเลิกการส่งตัวได้: ' + error.message,
+                                    icon: 'error',
+                                    confirmButtonText: 'ตกลง'
+                                });
+                            });
+                    }
+                });
             };
+
+            // Add pagination event listeners
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (window.currentPage > 1) {
+                    fetchData(window.currentPage - 1);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                fetchData(window.currentPage + 1);
+            });
+
+            // Initial load
+            fetchData(1);
         });
     </script>
 
@@ -734,5 +848,137 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
             });
         });
     </script>
+    <!-- แทนที่ script การจัดการ pagination เดิม -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...existing code...
+
+            function updatePaginationButtons(result) {
+                const pageInfo = document.getElementById('page-info');
+                const prevButton = document.getElementById('prev-page');
+                const nextButton = document.getElementById('next-page');
+
+                if (!result.pagination) {
+                    pageInfo.textContent = 'หน้า 1 จาก 1 (0 รายการ)';
+                    prevButton.style.display = 'none';
+                    nextButton.style.display = 'none';
+                    return;
+                }
+
+                const {
+                    currentPage,
+                    totalPages,
+                    totalRows,
+                    displayedRows,
+                    rowsPerPage
+                } = result.pagination;
+
+                // คำนวณจำนวนหน้าที่ควรมี
+                const shouldShowPagination = totalRows > rowsPerPage;
+
+                // อัพเดทข้อความแสดงหน้า
+                pageInfo.textContent = shouldShowPagination ?
+                    `หน้า ${currentPage} จาก ${totalPages} (${totalRows} รายการ)` :
+                    `แสดง ${totalRows} รายการ`;
+
+                // แสดง/ซ่อนปุ่มเปลี่ยนหน้า
+                // prevButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
+                // nextButton.style.display = shouldShowPagination ? 'inline-block' : 'none';
+
+                // อัพเดทสถานะปุ่ม
+                if (shouldShowPagination) {
+                    prevButton.disabled = currentPage <= 1;
+                    nextButton.disabled = currentPage >= totalPages;
+                }
+            }
+
+            // ปรับปรุงฟังก์ชัน fetchData
+            window.fetchData = function(page = 1) {
+                const queryParams = new URLSearchParams(window.location.search);
+                queryParams.set('page', page.toString());
+
+                // Add current search criteria if exists
+                if (window.currentSearchCriteria) {
+                    Object.entries(window.currentSearchCriteria).forEach(([key, value]) => {
+                        if (value) {
+                            queryParams.set(key, value);
+                        }
+                    });
+                }
+
+                fetch(`../action_dashboard/fetch_transfers1.php?${queryParams.toString()}`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (!result.success) {
+                            throw new Error(result.error || 'Failed to fetch data');
+                        }
+
+                        const tableBody = document.getElementById('table-body');
+                        tableBody.innerHTML = '';
+
+                        if (result.data.length === 0) {
+                            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">ไม่พบข้อมูล</td></tr>';
+                        } else {
+                            result.data.forEach(row => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                                <td>${row.national_id || ''}</td>
+                                <td>${row.full_name_tf || ''}</td>
+                                <td>${row.hospital_tf || ''}</td>
+                                <td>${row.transfer_date || ''}</td>
+                                <td>${row.status || ''}</td>
+                                <td>
+                                    <button class="edit-button" onclick="editTransfer('${row.national_id}', ${row.id})">แก้ไข</button>
+                                    <button class="cancel-button" onclick="cancelTransfer('${row.national_id}', ${row.id})">ยกเลิก</button>
+                                </td>
+                                <td>
+                                    <a href="../form2.php?id=${row.id}" target="_blank">
+                                        <i class="fas fa-eye view-icon"></i>
+                                    </a>
+                                </td>
+                                <td><a href="#">ดาวน์โหลด</a></td>
+                            `;
+                                tableBody.appendChild(tr);
+                            });
+                        }
+
+                        // อัพเดทปุ่ม pagination
+                        updatePaginationButtons(result);
+
+                        // เก็บหน้าปัจจุบัน
+                        window.currentPage = result.pagination.currentPage;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('table-body').innerHTML =
+                            '<tr><td colspan="8" style="text-align: center; color: red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+                    });
+            };
+
+            // Event Listeners for pagination
+            document.getElementById('prev-page').addEventListener('click', function() {
+                if (window.currentPage > 1) {
+                    fetchData(window.currentPage - 1);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', function() {
+                const {
+                    totalRows,
+                    rowsPerPage,
+                    currentPage
+                } = window.paginationInfo;
+                const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+                if (currentPage < totalPages && totalRows > rowsPerPage) {
+                    fetchData(window.currentPage + 1);
+                }
+            });
+
+            // Initial load
+            fetchData(1);
+        });
+    </script>
 </body>
+
 </html>
