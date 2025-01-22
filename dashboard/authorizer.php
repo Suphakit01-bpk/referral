@@ -80,7 +80,14 @@ if ($username) {
         
         .fa-sign-out-alt {
         }
+        .h1{
+
+        }
 </style>
+<script>
+    // ส่งค่า hospital จาก PHP session ไปให้ JavaScript
+    const userHospital = "<?php echo $_SESSION['hospital']; ?>";
+</script>
 </head>
 
 <body>
@@ -89,7 +96,15 @@ if ($username) {
         
         <a href="authorizer"><img src="../Assets/logo_bpk_group.png" alt="" width="160" height="50"></a>
         <div class="user-info">
-            <h1>สวัสดีคุณ <?php echo htmlspecialchars($fullname); ?></h1>
+            <h1>สวัสดีคุณ 
+                <span style="color: #2196F3; font-weight: bold;">
+                    <?php echo htmlspecialchars($fullname); ?>
+                </span> 
+                จาก 
+                <span style="color: #4CAF50; font-weight: bold;">
+                    <?php echo htmlspecialchars($hospital); ?>
+                </span>
+            </h1>
             <a href="history.php" class="nav-button">ดูประวัติ</a>
             <a href="../action_dashboard/logout.php" class="nav-button logout-button">
             <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
@@ -181,7 +196,7 @@ if ($username) {
                                 </div>
                                 <label for="national-id-popup">เลขประจำตัวประชาชน <span class="required">*</span></label>
                             <input id="national-id-popup" placeholder="กรุณาป้อนเลขประจำตัวประชาชน" type="text"
-                                maxlength="13" pattern="\d{13}" title="กรุณากรอกเลขประจำตัวประชาชน 13 หลัก" required>
+                                maxlength="13" pattern="\d{13}" title="กรุณากรอกเลขประจำตัวประชาชน 13 หลัก" >
 
                              <label for="full-name-popup">ชื่อ-นามสกุล</label>
                             <input id="full-name-popup" placeholder="กรุณาป้อนชื่อ-นามสกุล" type="text" required>
@@ -708,7 +723,6 @@ if ($username) {
             // เมื่อ submit ฟอร์ม
             transferForm.addEventListener('submit', function (event) {
                 event.preventDefault();
-
             
                 // ดึงค่าจากฟอร์ม
                 const nationalId = document.getElementById('national-id-popup').value.trim();
@@ -725,15 +739,14 @@ if ($username) {
                 const reason = document.getElementById('reason-popup').value.trim();
                 const status = "รอการอนุมัติ"; // Set status to "รอการอนุมัติ"
 
-                // Validate inputs
-                if (!nationalId || !fullName || !hospital || !transferDate || !company || !address || !phone || !age || !ap_hospital || !diagnosis || !reason) {
-                    alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
-                    return;
-                }
-
-                // Validate numeric inputs
-                if (isNaN(nationalId) || isNaN(phone) || isNaN(age)) {
-                    alert('กรุณากรอกเฉพาะตัวเลขในช่อง เลขประจำตัวประชาชน, โทรศัพท์ และ อายุ');
+                // Validate required inputs
+                if (!nationalId || !fullName || !hospital || !transferDate || !company || !address || !phone || !age || !ap_hospital) {
+                    Swal.fire({
+                        title: 'กรุณากรอกข้อมูลให้ครบ',
+                        text: 'ตวจสอบข้อมูลให้ครบถ้วนและถูกต้อง',
+                        icon: 'warning',
+                        confirmButtonText: 'ตกลง'
+                    });
                     return;
                 }
 

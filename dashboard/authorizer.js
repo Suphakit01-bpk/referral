@@ -145,36 +145,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle form submission
     transferForm.addEventListener('submit', async function(event) {
         event.preventDefault();
-
+    
         const formData = {
-            nationalId: document.getElementById('national-id-popup').value,
-            fullName: document.getElementById('full-name-popup').value,
-            hospital_tf: document.getElementById('hospital-popup').value,
-            transferDate: document.getElementById('transfer-date-popup').value,
-            company: document.getElementById('company-popup').value,
-            address: document.getElementById('address-popup').value,
-            phone: document.getElementById('phone-popup').value,
-            age: document.getElementById('age-popup').value,
-            diagnosis: document.getElementById('diagnosis-popup').value,
-            reason: document.getElementById('reason-popup').value,
+            nationalId: document.getElementById('national-id-popup').value || '',
+            fullName: document.getElementById('full-name-popup').value || '',
+            hospital_tf: document.getElementById('hospital-popup').value || '',
+            transferDate: document.getElementById('transfer-date-popup').value || '',
+            company: document.getElementById('company-popup').value || '',
+            address: document.getElementById('address-popup').value || '',
+            phone: document.getElementById('phone-popup').value || '',
+            age: document.getElementById('age-popup').value || '',
+            diagnosis: document.getElementById('diagnosis-popup').value || '',
+            reason: document.getElementById('reason-popup').value || '',
             billing_type: Array.from(document.querySelectorAll('input[name="billing_type[]"]:checked')).map(cb => cb.value),
-            insurance_company: document.getElementById('insurance-name').value,
+            insurance_company: document.getElementById('insurance-name').value || '',
             purpose: Array.from(document.querySelectorAll('input[name="purpose[]"]:checked')).map(cb => cb.value),
-            approved_hospital: document.getElementById('approved-hospital-popup').value
+            approved_hospital: document.getElementById('approved-hospital-popup').value || ''
         };
-
-        // เพิ่ม ID เฉพาะเมื่อเป็นการแก้ไข
+    
         if (this.dataset.editId) {
             formData.id = this.dataset.editId;
         }
-
+    
         try {
             const endpoint = this.dataset.editId ? 
                 '../action_dashboard/update_transfer.php' : 
                 '../action_dashboard/save_transfer.php';
-
-            console.log('Sending data:', formData); // Debug log
-
+    
+            console.log('Sending data:', formData);
+    
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -182,10 +181,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(formData)
             });
-
+    
             const result = await response.json();
-            console.log('Response:', result); // Debug log
-
+            console.log('Response:', result);
+    
             if (result.success) {
                 Swal.fire({
                     title: 'สำเร็จ',
@@ -199,15 +198,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(result.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
             }
         } catch (error) {
-            console.error('Error:', error); // Debug log
-            Swal.fire({
-                title: 'ผิดพลาด',
-                text: error.message,
-                icon: 'error',
-                confirmButtonText: 'ตกลง'
-            });
+            console.error('Error occurred:', error); // แสดงข้อผิดพลาดใน console เท่านั้น
         }
     });
+    
 
     // Fill form when editing
     function fillFormWithData(data) {
@@ -306,6 +300,30 @@ document.addEventListener('DOMContentLoaded', function() {
         
         window.location.search = urlParams.toString();
     };
+
+    // แก้ไขส่วน add-form-button click event
+    const addButton = document.getElementById('add-form-button');
+    addButton.addEventListener('click', function () {
+        // Select the approved hospital dropdown
+        const approvedHospitalSelect = document.getElementById('approved-hospital-popup');
+        
+        // Auto select user's hospital if it exists in options
+        if (userHospital) {
+            // Find matching option
+            const matchingOption = Array.from(approvedHospitalSelect.options)
+                .find(option => option.value === userHospital);
+            
+            if (matchingOption) {
+                approvedHospitalSelect.value = userHospital;
+            }
+        }
+
+        // Show form with animation
+        popupForm.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            popupForm.classList.add('show');
+        });
+    });
 });
 
 // เพิ่มฟังก์ชัน search ใหม่

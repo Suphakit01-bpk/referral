@@ -15,8 +15,8 @@ try {
         throw new Exception('Invalid JSON data');
     }
 
-    // ตรวจสอบข้อมูลที่จำเป็นให้ครบถ้วน
-    if (!isset($data['id']) || empty($data['id'])) {
+    // ตรวจสอบ ID เฉพาะกรณีที่เป็นการ update
+    if (isset($data['id']) && empty($data['id'])) {
         throw new Exception('Missing ID parameter');
     }
     if (!isset($data['nationalId']) || empty($data['nationalId'])) {
