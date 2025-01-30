@@ -92,8 +92,6 @@ if ($username) {
 
 <body>
     <div class="navbar">
-    
-        
         <a href="authorizer"><img src="../Assets/logo_bpk_group.png" alt="" width="160" height="50"></a>
         <div class="user-info">
             <h1>สวัสดีคุณ 
@@ -152,8 +150,8 @@ if ($username) {
                 </div>
             </div>
             <div class="form-actions">
-                <button id="search-button" type="button">Search</button>
-                <button id="cancel-button" class="cancel" type="button">ยกเลิก</button>
+                <button id="search-button" type="button">ค้นหา</button>
+                <button id="cancel-button" class="cancel" type="button">ล้าง</button>
             </div>
         </div>
 
@@ -185,17 +183,24 @@ if ($username) {
                                             <input type="checkbox" id="bill-fund" name="billing_type[]" value="fund">
                                             เรียกเก็บกองทุนเงินทดแทน
                                         </label><br>
+                                        <label>
+                                            <input type="checkbox" id="social-security" name="billing_type[]" value="social_security">
+                                            เรียกเก็บประกันสังคม(SW)
+                                        </label>
+                                        <br>
                                         <label class="insurance-container">
                                             <input type="checkbox" id="bill-insurance" name="billing_type[]"
                                                 value="insurance">
                                             เรียกเก็บบริษัทประกัน
                                             <input type="text" id="insurance-name" class="insurance-input"
                                                 placeholder="ระบุชื่อบริษัทประกัน" style="display: none;">
-                                        </label>
+                                        </label><br>
+
+                                        
                                     </div>
                                 </div>
                                 <label for="national-id-popup">เลขประจำตัวประชาชน <span class="required">*</span></label>
-                            <input id="national-id-popup" placeholder="กรุณาป้อนเลขประจำตัวประชาชน" type="text"
+                            <input id="national-id-popup" placeholder="กรุณาป้อนเลขประจำตัวประชาชน" type="number"
                                 maxlength="13" pattern="\d{13}" title="กรุณากรอกเลขประจำตัวประชาชน 13 หลัก" >
 
                              <label for="full-name-popup">ชื่อ-นามสกุล</label>
@@ -252,6 +257,14 @@ if ($username) {
                                             value="continuous">
                                         รักษาต่อเนื่องจนหายที่ โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล
                                     </label>
+                                    <br>
+                                    <label>
+                                        <input type="checkbox" id="purpose-other" name="purpose[]"
+                                            value="other">
+                                        อื่นๆโปรดระบุ
+                                        <input type="text" id="diagnosis-popup" class="other-input"name="diagnosis"
+                                            placeholder="อื่นๆโปรดระบุ" style="display: none;">
+                                    </label>
                                 </div>
                             </div>
 
@@ -270,13 +283,13 @@ if ($username) {
                                 <option value="โรงพยาบาลบางปะกอกอายุรเวช">โรงพยาบาลบางปะกอกอายุรเวช</option>
                             </select>
 
-                            <label for="diagnosis-popup"name="diagnosis" >การวินิจฉัยโรค</label>
-                            <input id="diagnosis-popup"name="diagnosis" placeholder="กรุณาป้อนการวินิจฉัยโรค" type="text">
+                            <!-- <label for="diagnosis-popup"name="diagnosis" >การวินิจฉัยโรค</label>
+                            <input id="diagnosis-popup"name="diagnosis" placeholder="กรุณาป้อนการวินิจฉัยโรค" type="text"> -->
 
                             <label for="reason-popup" name="reason">เหตุผลในการส่งตัว</label>
                             <input id="reason-popup"name="reason" placeholder="กรุณาป้อนเหตุผลในการส่งตัว" type="text">
                           
-                            <button type="submit">บันทึก</button>
+                            <button type="submit">ปริ้น</button>
                         </form>
                     </div>
                 </div>
@@ -299,7 +312,7 @@ if ($username) {
                 <?php 
                     try {
                         // Calculate pagination
-                        $rows_per_page = 5;
+                        $rows_per_page = 10;
                         $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
                         $offset = ($current_page - 1) * $rows_per_page;
 
@@ -846,7 +859,6 @@ if ($username) {
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ...existing code...
 
             // แก้ไขการ handle click event สำหรับปุ่ม edit
             document.body.addEventListener('click', function(event) {
@@ -912,7 +924,41 @@ if ($username) {
             });
         });
     </script>
-    <script src="your-javascript-file.js"></script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // จัดการกับช่องกรอกชื่อบริษัทประกัน
+            const insuranceCheckbox = document.getElementById('purpose-other');
+            const insuranceInput = document.getElementById('diagnosis-popup');
+
+            // เพิ่ม CSS inline สำหรับช่องกรอกชื่อบริษัทประกัน
+            insuranceInput.style.marginTop = '5px';
+            insuranceInput.style.width = '100%';
+            insuranceInput.style.padding = '8px';
+            insuranceInput.style.boxSizing = 'border-box';
+
+            insuranceCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    insuranceInput.style.display = 'block';
+                    insuranceInput.required = true;
+                } else {
+                    insuranceInput.style.display = 'none';
+                    insuranceInput.required = false;
+                    insuranceInput.value = ''; // ล้างค่าเมื่อยกเลิกการติ๊ก
+                }
+            });
+
+            // เพิ่มการตรวจสอบในฟอร์มก่อนส่ง
+            const transferForm = document.getElementById('transfer-form');
+            transferForm.addEventListener('submit', function(event) {
+                if (insuranceCheckbox.checked && !insuranceInput.value.trim()) {
+                    event.preventDefault();
+                    alert('กรุณาระบุชื่อบริษัทประกัน');
+                }
+            });
+        });
+    </script>
     <script>
         function changePage(page) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -920,6 +966,76 @@ if ($username) {
             window.location.search = urlParams.toString();
         }
     </script>
+    <script>
+function handleEditClick(button) {
+    const data = button.dataset;
+    
+    // Populate form fields
+    document.getElementById('national-id-popup').value = data.nationalId;
+    document.getElementById('national-id-popup').readOnly = true;
+    document.getElementById('full-name-popup').value = data.fullName;
+    document.getElementById('hospital-popup').value = data.hospital;
+    document.getElementById('transfer-date-popup').value = data.transferDate;
+    document.getElementById('company-popup').value = data.company || '';
+    document.getElementById('address-popup').value = data.address || '';
+    document.getElementById('phone-popup').value = data.phone || '';
+    document.getElementById('age-popup').value = data.age || '';
+    document.getElementById('diagnosis-popup').value = data.diagnosis || '';
+    document.getElementById('reason-popup').value = data.reason || '';
+    document.getElementById('approved-hospital-popup').value = data.approvedHospital || '';
+
+    // Handle billing types
+    try {
+        const billingTypes = JSON.parse(data.billingType);
+        document.querySelectorAll('input[name="billing_type[]"]').forEach(checkbox => {
+            checkbox.checked = billingTypes.includes(checkbox.value);
+            if (checkbox.id === 'bill-insurance' && checkbox.checked) {
+                const insuranceInput = document.getElementById('insurance-name');
+                insuranceInput.style.display = 'block';
+                insuranceInput.value = data.insuranceCompany || '';
+            }
+        });
+    } catch (e) {
+        console.error('Error parsing billing types:', e);
+    }
+
+    // Handle purposes
+    try {
+        const purposes = JSON.parse(data.purpose);
+        document.querySelectorAll('input[name="purpose[]"]').forEach(checkbox => {
+            checkbox.checked = purposes.includes(checkbox.value);
+            if (checkbox.id === 'purpose-other' && checkbox.checked) {
+                const diagnosisInput = document.getElementById('diagnosis-popup');
+                diagnosisInput.style.display = 'block';
+                diagnosisInput.value = data.diagnosis || '';
+            }
+        });
+    } catch (e) {
+        console.error('Error parsing purposes:', e);
+    }
+
+    // Set form mode to edit
+    document.getElementById('transfer-form').setAttribute('data-mode', 'edit');
+    document.getElementById('transfer-form').setAttribute('data-record-id', data.id);
+
+    // Show popup
+    const popupForm = document.getElementById('popup-form');
+    popupForm.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        popupForm.classList.add('show');
+    });
+}
+
+// Add this to your existing event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.addEventListener('click', function(event) {
+        const editButton = event.target.closest('.edit-button');
+        if (editButton) {
+            handleEditClick(editButton);
+        }
+    });
+});
+</script>
 </body>
 
 </html>

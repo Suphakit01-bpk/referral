@@ -85,6 +85,11 @@ h1 {
     background: transparent;
 }
 
+.phone-input {
+    flex: 0 0 100px !important; /* Override the flex property and set fixed width */
+    width: 100px !important; /* Set fixed width */
+}
+
 .number-box {
     display: inline-block;
     width: 100px;
@@ -98,12 +103,13 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    margin: 20px 0;
 }
 
-.signature-item {
+.signature-item label {
     /* width: 48%; */
     flex: 1 1 300px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .signature-container {
@@ -391,9 +397,14 @@ color: red;
 
 /* ปรับแต่งรูปแบบเส้นประ */
 .dotted-line {
+    border: none;
     border-bottom: 1px dotted #000;
-    flex: 1;
-    margin: 0 5px;
+    width: 100%;
+    padding: 2px 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background: transparent;
+    outline: none;
 }
 
 /* ปรับแต่ง checkbox */
@@ -403,7 +414,7 @@ color: red;
 
 .checkbox-options label {
     display: inline-block;
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 /* ปรับแต่งหัวข้อ */
@@ -411,4 +422,32 @@ color: red;
     text-align: center;
     font-size: 16px;
     margin: 10px 0;
+}
+
+.signature-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.signature-item {
+    display: inline-block;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.signature-item label {
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+.signature-item input.dotted-line {
+    margin: 0 10px;
+    border: none;
+    border-bottom: 1px dotted #000;
+    outline: none;
+    padding: 2px 5px;
 }

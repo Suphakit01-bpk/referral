@@ -544,3 +544,22 @@ table tbody tr:nth-child(even) {
     }
 }
 
+
+@media screen and (max-width: 1024px) {
+    /* ปรับขนาดฟอนต์ใน .navbar */
+    .navbar h1 {
+        font-size: 14px; /* ลดขนาดฟอนต์ของชื่อผู้ใช้และชื่อโรงพยาบาล */
+    }
+
+    /* ปรับขนาดฟอนต์ใน .user-info */
+    .user-info a.nav-button {
+        font-size: 12px; /* ลดขนาดฟอนต์ของปุ่ม */
+        padding: 6px 10px; /* ปรับขนาด padding ของปุ่มให้เล็กลง */
+    }
+
+    /* ปรับขนาดโลโก้ให้เล็กลง */
+    .navbar img {
+        width: 120px; /* ลดขนาดโลโก้ */
+        height: auto;
+    }
+}

@@ -26,7 +26,7 @@ try {
 
     // เพิ่ม error logging
     error_log("Attempting to update form ID: " . $id);
-    error_log("User approving: " . $_SESSION['username']);
+    error_log("User approving: " . $_SESSION['fullname']);
 
     // แก้ไข query และเพิ่ม error handling
     $query = "UPDATE transfer_form 
@@ -36,7 +36,7 @@ try {
               WHERE id = $2 
               RETURNING id"; // เพิ่ม RETURNING เพื่อตรวจสอบการอัพเดท
 
-    $result = pg_query_params($pdo, $query, array($_SESSION['username'], $id));
+    $result = pg_query_params($pdo, $query, array($_SESSION['fullname'], $id));
 
     if ($result) {
         $row = pg_fetch_assoc($result);

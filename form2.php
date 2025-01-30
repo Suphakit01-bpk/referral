@@ -108,16 +108,26 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
         </label>
 
 
-                <label class="insurance-container">
+
+        <label>
+            <input type="checkbox" 
+                   id="bill-fund" 
+                   name="billing_type[]" 
+                   value="social_security"
+                   <?php echo (in_array('social_security', $billingTypes) || in_array('"social_security"', $billingTypes)) ? 'checked' : ''; ?>
+                   disabled>
+                   เรียกเก็บประกันสังคม(SW)
+        </label>
+           
+          
+                <label class="insurance-container" for="insurance-company">
                     <input type="checkbox" id="bill-insurance" name="billing_type[]"value="insurance"
                     <?php echo (in_array('insurance', $billingTypes) || in_array('"insurance"', $billingTypes)) ? 'checked' : '';  ?> disabled>
-                    เรียกเก็บบริษัทประกัน
+                        ชื่อบริษัทประกัน:
                 </label>
-            <div id="insurance-company-field" style="display: none; margin-left: 20px;">
-                <label for="insurance-company">ชื่อบริษัทประกัน:</label>
-                <input type="text" id="insurance-company" name="insurance_company" 
+                <input type="text" id="insurance-company" name="billing_type[]" 
                     value="<?php echo htmlspecialchars($formData['insurance_company'] ?? ''); ?>" disabled>
-            </div>
+            
             </div>
         </div>
 
@@ -143,7 +153,7 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
             <label>ที่อยู่ </label>
             <input type="text" value="<?php echo htmlspecialchars($formData['address'] ?? ''); ?>">
             <label>โทรศัพท์ </label>
-            <input type="text" value="<?php echo htmlspecialchars($formData['phone'] ?? ''); ?>">
+            <input type="text" class="phone-input" value="<?php echo htmlspecialchars($formData['phone'] ?? ''); ?>">
         </div>
 
         <div class="form-group">
@@ -194,43 +204,38 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
                         disabled>
                     รักษาต่อเนื่องจนหายที่ โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล
                 </label>
-            </div>
+                <label>
+                    <input type="checkbox" id="purpose-other" name="purpose[]"
+                        value="other" <?php echo (in_array('continuous', $formData['purposes_array'])) ? 'checked' : ''; ?> 
+                        disabled>
+                        อื่นๆโปรดระบุ
+                    <input type="text" id="diagnosis-popup" name="diagnosis" 
+                    value="<?php echo htmlspecialchars($formData['diagnosis'] ?? ''); ?>" disabled>
+                </label>
+        </div>
         </div>
         <br>
+
+
         <div class="signature-row">
-            <div class="signature-item">
-                <label>ลงชื่อผู้ป่วย</label>
-                <input type="text">
-                <div class="form-group">
-
-                    <div class="signature-container">
-                        <canvas id="patientSignature" class="signature-pad" width="150" height="30"></canvas>
-                        <div class="signature-buttons">
-                            <button onclick="clearSignature('patientSignature')" class="no-print">ล้าง</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="signature-item">
-                <label>ลงชื่อผู้อนุมัติ</label>
-                <input type="text" value="<?php echo htmlspecialchars($formData['approved_by'] ?? ''); ?>">
-                <div class="form-group">
-
-                    <div class="signature-container">
-                        <canvas id="approverSignature" class="signature-pad" width="150" height="30"></canvas>
-                        <div class="signature-buttons">
-                            <button onclick="clearSignature('approverSignature')" class="no-print">ล้าง</button>
-                        </div>
-                    </div>
-
-                </div>
-                <br>
-                <label>ตำแหน่ง</label>
-                <input type="text">
-            </div>
-
+    <div class="signature-group" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+        <div class="signature-item" style="margin-right: 10px;">
+            <label style="margin-right: 10px;">ลงชื่อผู้ป่วย</label>
+            <input type="text" class="dotted-line" style="width: 200px;" value="">
         </div>
-        
+        <div class="signature-item" style="display: flex; flex-direction: column;">
+            <div style="margin-bottom: 10px;">
+                <label style="margin-right: 10px;">ลงชื่อผู้อนุมัติ</label>
+                <input type="text" class="dotted-line" style="width: 200px;" value="<?php echo htmlspecialchars($formData['approved_by'] ?? ''); ?>">
+            </div>
+            <div style="margin-left: 10px;">
+                <label style="margin-right: 10px;">ตำแหน่ง</label>
+                <input type="text" class="dotted-line" style="width: 200px;">
+            </div>
+        </div>
+    </div>
+</div>
+
         <div class="doctor-section">
             <h3>ความเห็นแพทย์</h3>
             <div class="form-group">
@@ -254,16 +259,7 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
                 <input type="text">
             </div>
             <br>
-            <label>แพทย์ผู้ตรวจ</label><input type="text">
-            <div class="form-group">
-
-                <div class="signature-container">
-                    <canvas id="doctorSignature" width="150" height="30"></canvas>
-                    <div class="signature-buttons">
-                        <button onclick="clearSignature('doctorSignature')" class="no-print">ล้าง</button>
-                    </div>
-                </div>
-            </div>
+            <label style="display: inline-block;">แพทย์ผู้ตรวจ</label><input type="text" class="dotted-line" style="display: inline-block; width: 200px;">
         </div>
 
         <p>หมายเหตุ โปรดส่งใบส่งตัวให้โรงพยาบาลทั้งชุด รวม 3 ฉบับ<br>
@@ -271,7 +267,9 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
 
             <div class="button-group">
     <button class="save-button" onclick="saveForm()">บันทึก</button>
-    <button class="approve-button" onclick="approveForm(<?php echo $id; ?>)">อนุมัติ</button>
+    <?php if ($_SESSION['role'] !== 'register' &&  $_SESSION ['role'] !== 'nurse' ) : ?>
+        <button class="approve-button" onclick="approveForm(<?php echo $id; ?>)">อนุมัติ</button>
+    <?php endif; ?>
 </div>
     </div>
     <script src="form.js"></script>
@@ -308,7 +306,7 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
                                     confirmButtonColor: '#28a745'
                                 }).then(() => {
                                     // window.location.href('../signin.html');
-                                    window.location.href = '/referral/Authorizer/authorizer.php';
+                                    window.location.href = '/referral-1/dashboard/authorizer.php';
 
                             });
                             } else {
@@ -351,137 +349,12 @@ $billingTypes = explode(',', $billingTypes); // แปลงเป็น array
         });
 </script>
     <script>
-        function setupCanvas(canvasId) {
-            var canvas = document.getElementById(canvasId);
-            var ctx = canvas.getContext('2d');
-            var isDrawing = false;
-            var signatureData = [];
-
-            // ตั้งค่าขนาด canvas ให้เท่ากับขนาดที่แสดงผลจริง
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-
-            function getMousePos(canvas, evt) {
-                var rect = canvas.getBoundingClientRect();
-                return {
-                    x: evt.clientX - rect.left,
-                    y: evt.clientY - rect.top
-                };
-            }
-
-            function getTouchPos(canvas, evt) {
-                var rect = canvas.getBoundingClientRect();
-                return {
-                    x: evt.touches[0].clientX - rect.left,
-                    y: evt.touches[0].clientY - rect.top
-                };
-            }
-
-            function startDrawing(x, y) {
-                isDrawing = true;
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                signatureData.push({ type: 'start', x: x, y: y });
-            }
-
-            function draw(x, y) {
-                if (!isDrawing) return;
-                ctx.lineTo(x, y);
-                ctx.stroke();
-                signatureData.push({ type: 'draw', x: x, y: y });
-            }
-
-            function stopDrawing() {
-                isDrawing = false;
-                signatureData.push({ type: 'end' });
-            }
-
-            canvas.addEventListener('mousedown', function (e) {
-                var pos = getMousePos(canvas, e);
-                startDrawing(pos.x, pos.y);
-            });
-
-            canvas.addEventListener('mousemove', function (e) {
-                var pos = getMousePos(canvas, e);
-                draw(pos.x, pos.y);
-            });
-
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-
-            canvas.addEventListener('touchstart', function (e) {
-                e.preventDefault();
-                var pos = getTouchPos(canvas, e);
-                startDrawing(pos.x, pos.y);
-            });
-
-            canvas.addEventListener('touchmove', function (e) {
-                e.preventDefault();
-                var pos = getTouchPos(canvas, e);
-                draw(pos.x, pos.y);
-            });
-
-            canvas.addEventListener('touchend', stopDrawing);
-
-            canvas.clearSignature = function () {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                signatureData = [];
-            };
-
-            canvas.redrawSignature = function () {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.beginPath();
-                for (var i = 0; i < signatureData.length; i++) {
-                    var point = signatureData[i];
-                    if (point.type === 'start') {
-                        ctx.moveTo(point.x, point.y);
-                    } else if (point.type === 'draw') {
-                        ctx.lineTo(point.x, point.y);
-                        ctx.stroke();
-                    }
-                }
-            };
-        }
-
-        function clearSignature(canvasId) {
-            var canvas = document.getElementById(canvasId);
-            canvas.clearSignature();
-        }
-
-        function redrawSignatures() {
-            document.getElementById('patientSignature').redrawSignature();
-            document.getElementById('approverSignature').redrawSignature();
-            document.getElementById('doctorSignature').redrawSignature();
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.getElementById('patientSignature').getContext) {
-                // เริ่มต้นฟังก์ชันการวาดลายเซ็น
-                initSignaturePad('patientSignature');
-                initSignaturePad('approverSignature');
-                initSignaturePad('doctorSignature')
-            } else {
-                alert("เบราว์เซอร์ของคุณไม่รองรับการใช้ลายเซ็นแบบ Canvas");
-            }
-        });
-
         function saveForm() {
             document.querySelectorAll('input[type="text"], input[type="date"], input[type="number"]').forEach(input => {
                 input.setAttribute('readonly', 'readonly');
             });
-
-            redrawSignatures();
-
             window.print();
         }
-
-        window.addEventListener('load', function () {
-            setupCanvas('patientSignature');
-            setupCanvas('approverSignature');
-            setupCanvas('doctorSignature');
-        });
-
-        window.addEventListener('beforeprint', redrawSignatures);
     </script>
 
 <script>

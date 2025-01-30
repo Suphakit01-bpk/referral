@@ -21,16 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const billingTypes = JSON.parse(data.billingType);
             document.querySelectorAll('input[name="billing_type[]"]').forEach(checkbox => {
                 checkbox.checked = billingTypes.includes(checkbox.value);
+                
+                // Handle insurance company field
+                if (checkbox.id === 'bill-insurance' && checkbox.checked) {
+                    const insuranceInput = document.getElementById('insurance-name');
+                    insuranceInput.style.display = 'block';
+                    insuranceInput.value = data.insuranceCompany || '';
+                }
             });
-        }
-
-        // Handle insurance company
-        const insuranceCheckbox = document.getElementById('bill-insurance');
-        const insuranceInput = document.getElementById('insurance-name');
-        if (data.insuranceCompany) {
-            insuranceCheckbox.checked = true;
-            insuranceInput.style.display = 'block';
-            insuranceInput.value = data.insuranceCompany;
         }
 
         // Handle purpose checkboxes
@@ -38,6 +36,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const purposes = JSON.parse(data.purpose);
             document.querySelectorAll('input[name="purpose[]"]').forEach(checkbox => {
                 checkbox.checked = purposes.includes(checkbox.value);
+                
+                // Handle "other" purpose field
+                if (checkbox.id === 'purpose-other' && checkbox.checked) {
+                    const diagnosisInput = document.getElementById('diagnosis-popup');
+                    diagnosisInput.style.display = 'block';
+                    diagnosisInput.value = data.diagnosis || '';
+                }
             });
         }
     }

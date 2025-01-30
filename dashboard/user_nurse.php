@@ -204,6 +204,12 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                         <input type="checkbox" id="bill-fund" name="billing_type[]" value="fund">
                                         เรียกเก็บกองทุนเงินทดแทน
                                     </label><br>
+
+                                    <label>
+                                            <input type="checkbox" id="social-security" name="billing_type[]" value="social_security">
+                                            เรียกเก็บประกันสังคม(SW)
+                                        </label>
+                                        <br>
                                     <label class="insurance-container">
                                         <input type="checkbox" id="bill-insurance" name="billing_type[]"
                                             value="insurance">
@@ -274,6 +280,14 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                             value="continuous">
                                         รักษาต่อเนื่องจนหายที่ โรงพยาบาลบางปะกอก 9 อินเตอร์เนชั่นแนล
                                     </label>
+                                    <br>
+                                    <label>
+                                        <input type="checkbox" id="purpose-other" name="purpose[]"
+                                            value="other">
+                                        อื่นๆโปรดระบุ
+                                        <input type="text" id="diagnosis-popup" class="other-input"
+                                            placeholder="อื่นๆโปรดระบุ" style="display: none;">
+                                    </label>
                                 </div>
                             </div>
                             <label for="approved-hospital">โรงพยาบาลที่อนุมัติ</label>
@@ -288,13 +302,13 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                                 <option value="โรงพยาบาลบางปะกอกอายุรเวช" <?php echo ($hospital === 'โรงพยาบาลบางปะกอกอายุรเวช') ? 'selected' : ''; ?>>โรงพยาบาลบางปะกอกอายุรเวช</option>
                             </select>
 
-                            <label for="diagnosis-popup">การวินิจฉัยโรค</label>
-                            <input id="diagnosis-popup" placeholder="กรุณาป้อนการวินิจฉัยโรค" type="text">
+                            <!-- <label for="diagnosis-popup">การวินิจฉัยโรค</label>
+                            <input id="diagnosis-popup" placeholder="กรุณาป้อนการวินิจฉัยโรค" type="text"> -->
 
                             <label for="reason-popup">เหตุผลในการส่งตัว</label>
                             <input id="reason-popup" placeholder="กรุณาป้อนเหตุผลในการส่งตัว" type="text">
 
-                            <button type="submit">บันทึก</button>
+                            <button type="submit">ปริ้น</button>
                         </form>
                     </div>
                 </div>
@@ -611,7 +625,7 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             document.getElementById('national-id-popup').readOnly = true;
                             document.getElementById('full-name-popup').value = record.full_name_tf;
                             document.getElementById('hospital_tf-popup').value = record.hospital_tf;
-                            document.getElementById('approved-hospital').value = record.approved_hospital || ''; // Add this line
+                            document.getElementById('approved-hospital').value = record.approved_hospital || '<?php echo htmlspecialchars($hospital); ?>';
                             // Format date for display
                             const date = new Date(record.transfer_date);
                             const formattedDate = date.toISOString().split('T')[0]; // เก็บรูปแบบ YYYY-MM-DD สำหรับ input type="date"
@@ -622,6 +636,51 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                             document.getElementById('age-popup').value = record.age || '';
                             document.getElementById('diagnosis-popup').value = record.diagnosis || '';
                             document.getElementById('reason-popup').value = record.reason || '';
+
+                            // Handle billing type checkboxes
+                            const billingTypes = Array.isArray(record.billing_type) 
+                                ? record.billing_type 
+                                : record.billing_type.replace(/[{"}]/g, '').split(',');
+
+                            // Reset all checkboxes first
+                            document.querySelectorAll('input[name="billing_type[]"]').forEach(checkbox => {
+                                checkbox.checked = false;
+                            });
+
+                            // Check appropriate checkboxes
+                            billingTypes.forEach(type => {
+                                const checkbox = document.querySelector(`input[name="billing_type[]"][value="${type}"]`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                    // Handle insurance company field
+                                    if (type === 'insurance') {
+                                        document.getElementById('insurance-name').style.display = 'block';
+                                        document.getElementById('insurance-name').value = record.insurance_company || '';
+                                    }
+                                }
+                            });
+
+                            // Handle purpose checkboxes
+                            const purposes = Array.isArray(record.purpose) 
+                                ? record.purpose 
+                                : record.purpose.replace(/[{"}]/g, '').split(',');
+
+                            // Reset all purpose checkboxes first
+                            document.querySelectorAll('input[name="purpose[]"]').forEach(checkbox => {
+                                checkbox.checked = false;
+                            });
+
+                            // Check appropriate purpose checkboxes
+                            purposes.forEach(purpose => {
+                                const checkbox = document.querySelector(`input[name="purpose[]"][value="${purpose}"]`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                    // Handle other purpose field
+                                    if (purpose === 'other') {
+                                        document.getElementById('diagnosis-popup').style.display = 'block';
+                                    }
+                                }
+                            });
 
                             // Show popup
                             popupForm.classList.remove('hidden');
@@ -867,6 +926,40 @@ $hospital = $_SESSION['hospital'] ?? 'โรงพยาบาลทั่วไ
                 if (insuranceCheckbox.checked && !insuranceInput.value.trim()) {
                     event.preventDefault();
                     alert('กรุณาระบุชื่อบริษัทประกัน');
+                }
+            });
+        });
+    </script>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // จัดการกับช่องกรอกชื่อบริษัทประกัน
+            const insuranceCheckbox = document.getElementById('purpose-other');
+            const insuranceInput = document.getElementById('diagnosis-popup');
+
+            // เพิ่ม CSS inline สำหรับช่องกรอกชื่อบริษัทประกัน
+            insuranceInput.style.marginTop = '5px';
+            insuranceInput.style.width = '100%';
+            insuranceInput.style.padding = '8px';
+            insuranceInput.style.boxSizing = 'border-box';
+
+            insuranceCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    insuranceInput.style.display = 'block';
+                    insuranceInput.required = true;
+                } else {
+                    insuranceInput.style.display = 'none';
+                    insuranceInput.required = false;
+                    insuranceInput.value = ''; // ล้างค่าเมื่อยกเลิกการติ๊ก
+                }
+            });
+
+            // เพิ่มการตรวจสอบในฟอร์มก่อนส่ง
+            const transferForm = document.getElementById('transfer-form');
+            transferForm.addEventListener('submit', function(event) {
+                if (insuranceCheckbox.checked && !insuranceInput.value.trim()) {
+                    event.preventDefault();
+                    alert('กรุณาระบุอื่นๆ');
                 }
             });
         });
